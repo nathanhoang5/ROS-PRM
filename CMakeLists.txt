@@ -11,6 +11,7 @@ find_package(catkin REQUIRED COMPONENTS
  add_service_files(
    FILES
    AddTwoInts.srv
+   PRM.srv
  )
 
 
@@ -61,3 +62,7 @@ add_dependencies(add_two_ints_server beginner_tutorials_gencpp)
 add_executable(add_two_ints_client src/add_two_ints_client.cpp)
 target_link_libraries(add_two_ints_client ${catkin_LIBRARIES})
 add_dependencies(add_two_ints_client beginner_tutorials_gencpp)
+
+add_executable(prmClient src/prmClient.cpp)
+target_link_libraries(prmClient ${catkin_LIBRARIES})
+add_dependencies(prmClient beginner_tutorials_gencpp)

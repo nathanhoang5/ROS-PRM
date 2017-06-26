@@ -12,13 +12,13 @@ int main(int argc, char **argv)
   }
 
   ros::NodeHandle n;
-  ros::ServiceClient client = n.serviceClient<beginner_tutorials::AddTwoInts>("add_two_ints");
+  ros::ServiceClient client = n.serviceClient<beginner_tutorials::AddTwoInts>("add_two_ints_client");
   beginner_tutorials::AddTwoInts srv;
-  srv.request.a = atoll(argv[1]);
-  srv.request.b = atoll(argv[2]);
+  //srv.request.a = atoll(argv[1]);
+  //srv.request.b = atoll(argv[2]);
   if (client.call(srv))
   {
-    ROS_INFO("Sum: %ld", (long int)srv.response.sum);
+    //ROS_INFO("Sum: %ld", (long int)srv.response.sum);
   }
   else
   {
