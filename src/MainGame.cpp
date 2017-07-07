@@ -57,7 +57,7 @@ int closedCounter = 0;
 //Counter for index of added nodes array
 int aNCounter = 0;
 
-double timeTaken = 0;
+double runTime = 0;
 
 
 //Each point stored as a node
@@ -178,24 +178,30 @@ MainGame::~MainGame()
 
 }
 
+
 //Called from main class, starts application depending on if selectPoints==true, then starts gameLoop()
-void MainGame::run() {
+double MainGame::run() {
 	initSystems();
-	createObstacle();
+
+    createObstacle();
+    createObstacle();
     SDL_RenderPresent(_renderer);
-    //SDL_RenderDrawPoint(_renderer,0,0);
     SDL_RenderPresent(_renderer);
-	//createObstacle();
-	if (selectPts) {
-		cout << "Select start point" << endl;
-	}
-	else {
-		stillRunning = true;
-		redrawSF();
-		cout << "Press space to populate map" << endl;
-	}
+
+
+
+    cout << "Select start point" << endl;
+
+
 
 	gameLoop();
+
+	SDL_SetRenderDrawColor(_renderer, 0, 0, 0, 255);
+	SDL_RenderClear(_renderer);
+    SDL_DestroyWindow(_window);
+    SDL_Quit();
+    return runTime;
+	//cout<<"GameState = EXIT"<<endl;
 }
 
 //Create window and initialize lists, makes white background
@@ -216,6 +222,9 @@ void MainGame::initSystems() {
 	}
 	closedNodeList[0] = 0;
 	closedCounter = closedCounter + 1;
+
+	selectPts = true;
+
 }
 
 //If there is no error, continue to process input
@@ -224,6 +233,7 @@ void MainGame::gameLoop() {
 		processInput();
 		//drawGame();
 	}
+
 }
 
 //Keeps track of stage (populate, connect, query)
@@ -294,7 +304,7 @@ void MainGame::processInput() {
 							cout << "Connect time: "<< (i3-i2)/(double) CLOCKS_PER_SEC*1000 <<endl;
 							cout << "Press space to find path (A*)" << endl;
 							counter = counter + 1;
-							cout << "Collision check time: " << timeTaken << endl;
+							//cout << "Collision check time: " << timeTaken << endl;
 						}
 						else if (counter == 2) {
 							counter = 0;
@@ -305,10 +315,12 @@ void MainGame::processInput() {
 							double time_elapsed = (double(i1 - start) + double(i3 - i2) + double(endClock - i4))/(double) CLOCKS_PER_SEC *1000;
 							cout << "Query time: "<< (endClock-i4)/(double) CLOCKS_PER_SEC*1000 <<endl;
 							cout << "Time to calculate the route (ms): " << time_elapsed << endl;
-							cout << "Clocks per second: " << (double) CLOCKS_PER_SEC<<endl;
+							//cout << "Clocks per second: " << (double) CLOCKS_PER_SEC<<endl;
 							//End program
+							runTime = time_elapsed;
 							stillRunning = false;
-							selectPts = false;
+
+
 							break;
 						}
 					}
@@ -434,7 +446,8 @@ void MainGame::populateTestMap() {
 //TODO: Delete deprecated rectangles
 //Sets position and draws obstacles. Can be called again to redraw
 void MainGame::createObstacle() {
-    /*cout<<"Called createObs"<<endl;
+    //cout<<"Called createObs"<<endl;
+    /*
 	obs[0].h = 180;
 	obs[0].w = 40;
 	obs[0].x = 160;
@@ -626,6 +639,7 @@ bool MainGame::Line(  float x1, float y1,  float x2,  float y2)
 
 //Re-draw start and finish rectangles for clarity
 void MainGame::redrawSF() {
+	//cout<<"called redraw SF"<<endl;
 	//Starting point
 	SDL_Rect startRect;
 	startRect.h = nodeSize;
@@ -662,7 +676,7 @@ void MainGame::printCn() {
 }
 
 //Priority queue to store open (activated) nodes
-priority_queue<node, vector<node>, CompareNode> pq;
+priority_queue<node, vector<node>, CompareNode> pq = priority_queue<node, vector<node>, CompareNode>();
 
 //Finds the best path!
 void MainGame::query() {
@@ -689,6 +703,7 @@ void MainGame::query() {
 				//If the connection is the finish, break out of loop and display path
 				else if (cxn == 1) {
 					cout << "Found path!" << endl;
+					clearQueueList();
 					foundNode(i);
 					found = true;
 					break;
@@ -736,12 +751,25 @@ void MainGame::foundNode(int a) {
 	//Green
 	SDL_SetRenderDrawColor(_renderer, 22, 204, 28, 255);
 	//Record first node in path
+
 	pathList += to_string(nodeList[curNode]->getArrayValue());
 	pathList += " ";
+
+
 	//Draw line from finish to connecting node
 	SDL_RenderDrawLine(_renderer, nodeList[curNode]->getxPos(), nodeList[curNode]->getyPos(), endX, endY);
 	//While not at the start node
 	while (!(nodeList[curNode]->getParent() == -5)) {
+
+        //cout<<"Array value: "<<nodeList[curNode]->getArrayValue()<<endl;
+        //cout<<"Parent: "<<nodeList[curNode]->getParent()<<endl;
+
+        if(nodeList[curNode]->getArrayValue()==nodeList[curNode]->getParent()){
+            //cout<<"parent value same as array value"<<endl;
+            //cout<<"PosX: " << nodeList[curNode]->getxPos()<<endl;
+            //cout<<"PosY: " << nodeList[curNode]->getyPos()<<endl;
+            break;
+        }
 		//Add the current node to the path record and draw line
 		pathList += to_string(nodeList[curNode]->getParent());
 		pathList += " ";
@@ -750,7 +778,17 @@ void MainGame::foundNode(int a) {
 		curNode = nodeList[curNode]->getParent();
 	}
 	//Display path record and draw path
-	cout << "Path: " << pathList << endl;
+	//cout << "Path: " << pathList << endl;
+	//cout <<"PQ Size Before: "<<pq.size()<<endl;
+	pq = priority_queue<node, vector<node>, CompareNode>();
+	//cout <<"PQ Size After: "<<pq.size()<<endl;
+	closedCounter = 0;
+	//cout <<"Closed Counter: "<<closedCounter;
+	for(int i = 0; i<numNodes; i++){
+            nodeList[i] = nullptr;
+
+	}
+	pathList = "";
 	SDL_RenderPresent(_renderer);
 
 }

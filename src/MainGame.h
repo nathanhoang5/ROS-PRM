@@ -10,7 +10,7 @@ public:
 	MainGame();
 	~MainGame();
 
-	void run();
+	double run();
 
 
 

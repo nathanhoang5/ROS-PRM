@@ -18,7 +18,7 @@ int main(int argc, char **argv)
 
   if (client.call(srv))
   {
-    //std::cout<<((double)srv.response.runTime)<<std::endl;
+    std::cout<<((double)srv.response.runTime)<<std::endl;
   }
   else
   {

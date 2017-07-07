@@ -1,14 +1,16 @@
 #include "MainGame.h"
 #include "ros/ros.h"
 #include "beginner_tutorials/PRM.h"
+
 bool timeTaken(beginner_tutorials::PRM::Request  &req,
                beginner_tutorials::PRM::Response &res){
-    //std::cout<<"running"<<std::endl;
+    std::cout<<"running"<<std::endl;
     MainGame mainGame;
-	mainGame.run();
-	//res.runTime = 0;
+	res.runTime = mainGame.run();
     return true;
 }
+
+
 
 int main(int argc, char** argv) {
 
