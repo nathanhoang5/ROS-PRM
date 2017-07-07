@@ -5,11 +5,14 @@
 #include <chrono>
 #include <ratio>
 #include <ctime>
+#include <beginner_tutorials/node.h>
+#include <beginner_tutorials/nodeArray.h>
 
 using namespace std;
 
+
 //Number of nodes
-const int numNodes = 500;
+const int numNodes = 25;
 
 //Start and end positions
 int startX = 120;
@@ -40,7 +43,7 @@ const int numObs = 3;
 SDL_Rect* obs = new SDL_Rect[numObs];
 
 //Max distance allowed between nodes
-const int maxNodeDist = 50;
+const int maxNodeDist = 5000;
 
 //Stores path from start to finish
 string pathList;
@@ -59,6 +62,7 @@ int aNCounter = 0;
 
 double runTime = 0;
 
+//beginner_tutorials::nodeArray n;
 
 //Each point stored as a node
 class node
@@ -92,6 +96,8 @@ public:
 	int getParent() const { return parent; }
 	int getArrayValue() const { return arrayValue; }
 	int getConnection(int n) {	return connections[n];	}
+	int* getConnectionArray(){  return connections; }
+
 
 	//Sets movement cost to get to this node, then the priority (for the priority queue)
 	void setPriority(int pD)
@@ -160,6 +166,7 @@ MainGame::MainGame()
 	_screenWidth = sw;
 	_screenHeight = sh;
 	_gameState = GameState::PLAY;
+	tester = 35;
 }
 
 //Can be called to exit application when error is thrown
@@ -224,6 +231,8 @@ void MainGame::initSystems() {
 	closedCounter = closedCounter + 1;
 
 	selectPts = true;
+
+
 
 }
 
@@ -300,6 +309,7 @@ void MainGame::processInput() {
 						else if (counter == 1) {
 							i2 = clock();
 							connect();
+                            fillROSNodeArray();
 							i3 = clock();
 							cout << "Connect time: "<< (i3-i2)/(double) CLOCKS_PER_SEC*1000 <<endl;
 							cout << "Press space to find path (A*)" << endl;
@@ -673,6 +683,22 @@ void MainGame::printCn() {
 			}
 		}
 	}
+}
+
+void MainGame::fillROSNodeArray(){
+    for(int i = 0; i<numNodes; i++){
+        beginner_tutorials::node curN;
+        curN.id =nodeList[i]->getArrayValue();
+        curN.x = nodeList[i]->getxPos();
+        curN.y = nodeList[i]->getyPos();
+        int * cnA = nodeList[i]->getConnectionArray();
+
+        for(int j = 0; j<numNodes; j++){
+            curN.connections.push_back(cnA[j]);
+        }
+
+        n.nodeLst.push_back(curN);
+    }
 }
 
 //Priority queue to store open (activated) nodes

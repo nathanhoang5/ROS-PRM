@@ -1,6 +1,7 @@
 #pragma once
 #include <SDL.h>
-
+#include <beginner_tutorials/node.h>
+#include <beginner_tutorials/nodeArray.h>
 
 enum class GameState{PLAY,EXIT};
 
@@ -9,9 +10,9 @@ class MainGame
 public:
 	MainGame();
 	~MainGame();
-
+    int tester;
 	double run();
-
+    beginner_tutorials::nodeArray n;
 
 
 
@@ -29,6 +30,7 @@ private:
 	int minNum(int a, int b);
 	void redrawSF();
 	void printCn();
+	void fillROSNodeArray();
 	void query();
 	int getMoveDist(int a, int b);
 	void foundNode(int a);
@@ -44,4 +46,5 @@ private:
 	int _screenWidth;
 	int _screenHeight;
 	GameState _gameState;
+
 };

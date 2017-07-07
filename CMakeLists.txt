@@ -8,19 +8,25 @@ find_package(catkin REQUIRED COMPONENTS
   message_generation
 )
 
+add_message_files(
+  FILES
+  node.msg
+  nodeArray.msg
+)
+
  add_service_files(
    FILES
    AddTwoInts.srv
    PRM.srv
  )
 
-
- generate_messages(
+generate_messages(
    DEPENDENCIES
    std_msgs
  )
 
 catkin_package(
+CATKIN_DEPENDS message_runtime
 )
 
 set(CMAKE_CXX_FLAGS "-std=c++11 ${CMAKE_CXX_FLAGS}")
