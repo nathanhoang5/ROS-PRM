@@ -235,9 +235,11 @@ void pQuery::initSystems() {
 	closedCounter = closedCounter + 1;
 
 	selectPts = false;
+    stillRunning = true;
 
-
-
+    fillLocalNodeArray();
+    redrawSF();
+    redrawSF();
 
 }
 
@@ -253,11 +255,11 @@ void pQuery::fillLocalNodeArray(){
 	    nodeList[aPos]->initCArray();
 	    //std::cout<<g.id<<std::endl;
 
-	    for(std::vector<short unsigned int>::const_iterator bit = g.connections.begin(); bit != g.connections.end(); ++bit)
+	    for(std::vector<int>::const_iterator bit = g.connections.begin(); bit != g.connections.end(); ++bit)
         {
             int cn;
             cn = *bit;
-            cout<<cn<<endl;
+            //cout<<cn<<endl;
             nodeList[aPos]->addConnection(cn);
 
         }
@@ -265,6 +267,7 @@ void pQuery::fillLocalNodeArray(){
         aPos = aPos+1;
     }
     //setStartEnd();
+    nodeList[0]->setParent(-5);
 }
 
 void pQuery::setStartEnd(){
@@ -359,16 +362,17 @@ void pQuery::processInput() {
 							//cout << "Collision check time: " << timeTaken << endl;
 						}
 						else if (counter == 0) {
-							counter = 1;
-							cout<<"querying"<<endl;
+
+							//cout<<"querying"<<endl;
 							i4 = clock();
-							fillLocalNodeArray();
-							cout <<"Called fill node array"<<endl;
+							//fillLocalNodeArray();
+							//cout <<"Called fill node array"<<endl;
+							//redrawSF();
 							query();
 							endClock = clock();
 							//Adds time taken for each section and print
 							double time_elapsed = (double(i1 - start) + double(i3 - i2) + double(endClock - i4))/(double) CLOCKS_PER_SEC *1000;
-							cout << "Query time: "<< (endClock-i4)/(double) CLOCKS_PER_SEC*1000 <<endl;
+							//cout << "Query time: "<< (endClock-i4)/(double) CLOCKS_PER_SEC*1000 <<endl;
 							cout << "Time to calculate the route (ms): " << time_elapsed << endl;
 							//cout << "Clocks per second: " << (double) CLOCKS_PER_SEC<<endl;
 							//End program
@@ -699,8 +703,8 @@ void pQuery::redrawSF() {
 	SDL_Rect startRect;
 	startRect.h = nodeSize;
 	startRect.w = nodeSize;
-	startRect.x = startX-nodeSize/2;
-	startRect.y = startY - nodeSize / 2;
+	startRect.x = nodeList[0]->getxPos()-nodeSize/2;
+	startRect.y = nodeList[0]->getyPos() - nodeSize / 2;
 	SDL_SetRenderDrawColor(_renderer, 0, 255, 0, 255);
 	SDL_RenderFillRect(_renderer, &startRect);
 
@@ -708,8 +712,8 @@ void pQuery::redrawSF() {
 	SDL_Rect finRect;
 	finRect.h = nodeSize;
 	finRect.w = nodeSize;
-	finRect.x = endX - nodeSize / 2;
-	finRect.y = endY - nodeSize / 2;
+	finRect.x = nodeList[1]->getxPos() - nodeSize / 2;
+	finRect.y = nodeList[1]->getyPos() - nodeSize / 2;
 	SDL_SetRenderDrawColor(_renderer, 255, 0, 0, 255);
 	SDL_RenderFillRect(_renderer, &finRect);
 
@@ -751,12 +755,14 @@ priority_queue<node, vector<node>, CompareNode> pq = priority_queue<node, vector
 
 //Finds the best path!
 void pQuery::query() {
+
 	//True when path is found
 	bool found = false;
 	//Add starting node to pq
 	pq.push(*nodeList[0]);
 	//While the path hasn't been found...
 	while (found == false) {
+
 		//If there are no more open nodes, there is no possible path
 		if (pq.size() == 0) {
 			cout<<"No path to end!"<<endl;
@@ -773,9 +779,10 @@ void pQuery::query() {
 				}
 				//If the connection is the finish, break out of loop and display path
 				else if (cxn == 1) {
-					cout << "Found path!" << endl;
+					//cout << "Found path!" << endl;
 					clearQueueList();
 					foundNode(i);
+
 					found = true;
 					break;
 				}
@@ -802,6 +809,7 @@ void pQuery::query() {
 				}
 			}
 	}
+
 }
 
 //Return total distance from START node to node b through path of node a
@@ -819,6 +827,7 @@ void pQuery::foundNode(int a) {
 	//redrawFin();
 	//Current node in path (starts from the end)
 	int curNode = a;
+
 	//Green
 	SDL_SetRenderDrawColor(_renderer, 22, 204, 28, 255);
 	//Record first node in path
@@ -828,7 +837,7 @@ void pQuery::foundNode(int a) {
 
 
 	//Draw line from finish to connecting node
-	SDL_RenderDrawLine(_renderer, nodeList[curNode]->getxPos(), nodeList[curNode]->getyPos(), endX, endY);
+	SDL_RenderDrawLine(_renderer, nodeList[curNode]->getxPos(), nodeList[curNode]->getyPos(), nodeList[1]->getxPos(), nodeList[1]->getyPos());
 	//While not at the start node
 	while (!(nodeList[curNode]->getParent() == -5)) {
 
