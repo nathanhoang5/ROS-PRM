@@ -1,4 +1,4 @@
-#include "MainGame.h"
+#include "pQuery.h"
 #include <iostream>
 #include <queue>
 #include <SDL.h>
@@ -31,7 +31,7 @@ int occupancyGrid[sw][sh];
 const int nodeSize = 3;
 
 //True after start and end have been selected, takes spacebar input
-bool stillRunning = false;
+bool stillRunning = true;
 
 //True at start, allows selection of start and end points
 bool selectPts = true;
@@ -98,6 +98,10 @@ public:
 	int getConnection(int n) {	return connections[n];	}
 	int* getConnectionArray(){  return connections; }
 
+    void setXY(int x, int y){
+        xPos = x;
+        yPos = y;
+    }
 
 	//Sets movement cost to get to this node, then the priority (for the priority queue)
 	void setPriority(int pD)
@@ -159,7 +163,7 @@ public:
 node* nodeList[numNodes];
 
 //Initialize window parameters
-MainGame::MainGame()
+pQuery::pQuery()
 {
 	_window = nullptr;
 	_renderer = nullptr;
@@ -180,14 +184,14 @@ void fatalError(string errorString) {
 }
 
 //Destructor?? I don't know what this is...
-MainGame::~MainGame()
+pQuery::~pQuery()
 {
 
 }
 
 
 //Called from main class, starts application depending on if selectPoints==true, then starts gameLoop()
-void MainGame::run() {
+void pQuery::run() {
 	initSystems();
 
     createObstacle();
@@ -212,7 +216,7 @@ void MainGame::run() {
 }
 
 //Create window and initialize lists, makes white background
-void MainGame::initSystems() {
+void pQuery::initSystems() {
 
 	SDL_Init(SDL_INIT_EVERYTHING);
 	_window = SDL_CreateWindow("Probabilistic Roadmap", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, _screenWidth, _screenHeight, SDL_WINDOW_SHOWN);
@@ -230,14 +234,50 @@ void MainGame::initSystems() {
 	closedNodeList[0] = 0;
 	closedCounter = closedCounter + 1;
 
-	selectPts = true;
+	selectPts = false;
+
 
 
 
 }
 
+void pQuery::fillLocalNodeArray(){
+    static node* a;
+    int aPos = 0;
+    for(std::vector<beginner_tutorials::node>::const_iterator it = n.nodeLst.begin(); it != n.nodeLst.end(); ++it)
+    {
+	    beginner_tutorials::node g;
+	    g = *it;
+
+	    nodeList[aPos] = new node(g.x, g.y, 0, 10000, g.id);
+	    nodeList[aPos]->initCArray();
+	    //std::cout<<g.id<<std::endl;
+
+	    for(std::vector<short unsigned int>::const_iterator bit = g.connections.begin(); bit != g.connections.end(); ++bit)
+        {
+            int cn;
+            cn = *bit;
+            cout<<cn<<endl;
+            nodeList[aPos]->addConnection(cn);
+
+        }
+
+        aPos = aPos+1;
+    }
+    //setStartEnd();
+}
+
+void pQuery::setStartEnd(){
+    nodeList[0]->setXY(sx,sy);
+    nodeList[1]->setXY(ex,ey);
+    startX = sx;
+    startY = sy;
+    endX = ex;
+    endY = ey;
+}
+
 //If there is no error, continue to process input
-void MainGame::gameLoop() {
+void pQuery::gameLoop() {
 	while (_gameState != GameState::EXIT) {
 		processInput();
 		//drawGame();
@@ -253,7 +293,7 @@ clock_t t1, t2;
 //True if selecting start position, false if selecting end position
 bool selectStart = true;
 //Takes user input
-void MainGame::processInput() {
+void pQuery::processInput() {
 	SDL_Event evnt;
 	while (SDL_PollEvent(&evnt) == true) {
 		switch (evnt.type) {
@@ -293,7 +333,8 @@ void MainGame::processInput() {
 			case SDL_KEYDOWN:
 				if (stillRunning) {
 					if (evnt.key.keysym.scancode == SDL_SCANCODE_SPACE) {
-						if (counter == 0) {
+                        cout<<"Pressed space"<<endl;
+						if (counter == 3) {
 							start = clock();
 							populate();
 							//populateTestMap();
@@ -306,21 +347,23 @@ void MainGame::processInput() {
 							cout << "Press space to connect nodes" << endl;
 							counter = counter + 1;
 						}
-						else if (counter == 1) {
+						else if (counter == 3) {
 							i2 = clock();
 							connect();
                             fillROSNodeArray();
 							i3 = clock();
 							cout << "Connect time: "<< (i3-i2)/(double) CLOCKS_PER_SEC*1000 <<endl;
-							//cout << "Press space to find path (A*)" << endl;
+							cout << "Press space to find path (A*)" << endl;
 							counter = counter + 1;
-							counter = 0;
 							stillRunning = false;
 							//cout << "Collision check time: " << timeTaken << endl;
 						}
-						else if (counter == 2) {
-							counter = 0;
+						else if (counter == 0) {
+							counter = 1;
+							cout<<"querying"<<endl;
 							i4 = clock();
+							fillLocalNodeArray();
+							cout <<"Called fill node array"<<endl;
 							query();
 							endClock = clock();
 							//Adds time taken for each section and print
@@ -343,7 +386,7 @@ void MainGame::processInput() {
 
 
 //Populates map of numNodes nodes
-void MainGame::populate() {
+void pQuery::populate() {
 
 	//Used to populate array
 	static node* a;
@@ -399,7 +442,7 @@ void MainGame::populate() {
 }
 
 //Populates a map with chosen points
-void MainGame::populateTestMap() {
+void pQuery::populateTestMap() {
 
 	//Starting point
 	nodeList[0] = new node(startX, startY, 0, 10000, 0);
@@ -457,7 +500,7 @@ void MainGame::populateTestMap() {
 //TODO: Initialize array in separate method
 //TODO: Delete deprecated rectangles
 //Sets position and draws obstacles. Can be called again to redraw
-void MainGame::createObstacle() {
+void pQuery::createObstacle() {
     //cout<<"Called createObs"<<endl;
     /*
 	obs[0].h = 180;
@@ -499,7 +542,7 @@ void MainGame::createObstacle() {
 }
 
 //Connects nodes to its neighbors
-void MainGame::connect() {
+void pQuery::connect() {
 
 	//Number of connections
 
@@ -551,7 +594,7 @@ void MainGame::connect() {
 
 
 //Returns true if two nodes are not obstructed
-bool MainGame::notObstructed(int x1, int y1, int x2, int y2) {
+bool pQuery::notObstructed(int x1, int y1, int x2, int y2) {
 	/*
 	//Check each obstacle
 	for (int i = 0; i < numObs; i++) {
@@ -594,7 +637,7 @@ bool MainGame::notObstructed(int x1, int y1, int x2, int y2) {
 
 
 // Bresenham's line algorithm, taken from https://rosettacode.org/wiki/Bitmap/Bresenham%27s_line_algorithm#C.2B.2B
-bool MainGame::Line(  float x1, float y1,  float x2,  float y2)
+bool pQuery::Line(  float x1, float y1,  float x2,  float y2)
 {
 
 
@@ -650,7 +693,7 @@ bool MainGame::Line(  float x1, float y1,  float x2,  float y2)
 }
 
 //Re-draw start and finish rectangles for clarity
-void MainGame::redrawSF() {
+void pQuery::redrawSF() {
 	//cout<<"called redraw SF"<<endl;
 	//Starting point
 	SDL_Rect startRect;
@@ -674,7 +717,7 @@ void MainGame::redrawSF() {
 }
 
 //Print all connections for all nodes
-void MainGame::printCn() {
+void pQuery::printCn() {
 	for (int i = 0; i < numNodes; i++) {
 		for (int j = 0; j < numNodes; j++) {
 			if (!(nodeList[i]->getConnection(j)==-1)) {
@@ -687,7 +730,7 @@ void MainGame::printCn() {
 	}
 }
 
-void MainGame::fillROSNodeArray(){
+void pQuery::fillROSNodeArray(){
     for(int i = 0; i<numNodes; i++){
         beginner_tutorials::node curN;
         curN.id =nodeList[i]->getArrayValue();
@@ -707,7 +750,7 @@ void MainGame::fillROSNodeArray(){
 priority_queue<node, vector<node>, CompareNode> pq = priority_queue<node, vector<node>, CompareNode>();
 
 //Finds the best path!
-void MainGame::query() {
+void pQuery::query() {
 	//True when path is found
 	bool found = false;
 	//Add starting node to pq
@@ -762,7 +805,7 @@ void MainGame::query() {
 }
 
 //Return total distance from START node to node b through path of node a
-int MainGame::getMoveDist(int a, int b) {
+int pQuery::getMoveDist(int a, int b) {
 	int dX = nodeList[a]->getxPos() - nodeList[b]->getxPos();
 	int dY = nodeList[a]->getyPos() - nodeList[b]->getyPos();
 	int d =(sqrt(dX*dX + dY*dY));
@@ -770,7 +813,7 @@ int MainGame::getMoveDist(int a, int b) {
 }
 
 //If node has been found (a=array value of last node connected to finish node)
-void MainGame::foundNode(int a) {
+void pQuery::foundNode(int a) {
 
 	//Clear all lines
 	//redrawFin();
@@ -822,7 +865,7 @@ void MainGame::foundNode(int a) {
 }
 
 //Returns true if node is not on the open nodes list(pq) or closed node list
-bool MainGame::notFound(int a) {
+bool pQuery::notFound(int a) {
 	for (int i = 0; i < numNodes; i++) {
 		if (closedNodeList[i] == a) {
 			return false;
@@ -835,7 +878,7 @@ bool MainGame::notFound(int a) {
 }
 
 //Adds nodes to the open node list (a=parent node)
-void MainGame::addNodes(int a) {
+void pQuery::addNodes(int a) {
 	for (int i = 0; i < numNodes; i++) {
 		//If there are no more added nodes, clear queue waitlist (addedNodes[]) and break
 		if (addedNodes[i] == -1) {
@@ -854,7 +897,7 @@ void MainGame::addNodes(int a) {
 }
 
 //Reset addedNodes[]
-void MainGame::clearQueueList() {
+void pQuery::clearQueueList() {
 	aNCounter = 0;
 	for (int i = 0; i < numNodes; i++) {
 		addedNodes[i] = -1;
@@ -862,7 +905,7 @@ void MainGame::clearQueueList() {
 }
 
 //To clearly show path: clear all connection lines, but re-draw nodes and obstacles
-void MainGame::redrawFin() {
+void pQuery::redrawFin() {
 	SDL_SetRenderDrawColor(_renderer, 0, 0, 0, 255);
 	SDL_RenderClear(_renderer);
 	SDL_SetRenderDrawColor(_renderer, 0, 0, 255, 255);
@@ -878,7 +921,7 @@ void MainGame::redrawFin() {
 	//createObstacle();
 }
 
-void MainGame::clearRenderer(){
+void pQuery::clearRenderer(){
     SDL_SetRenderDrawColor(_renderer, 0, 0, 0, 255);
     SDL_RenderClear(_renderer);
 }

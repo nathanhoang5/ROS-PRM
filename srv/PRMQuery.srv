@@ -1,8 +1,8 @@
+nodeArray nA
 float64 startX
 float64 startY
 float64 endX
 float64 endY
 nav_msgs/OccupancyGrid o
 ---
-nodeArray nA
-
+nodeArray nFinal

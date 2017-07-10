@@ -1,30 +1,54 @@
 #include "ros/ros.h"
 #include "beginner_tutorials/PRM.h"
+#include "beginner_tutorials/PRMQuery.h"
+#include <beginner_tutorials/node.h>
+#include <beginner_tutorials/nodeArray.h>
 #include <cstdlib>
 
 int main(int argc, char **argv)
 {
   ros::init(argc, argv, "PRM_Client");
-  if (argc != 3)
-  {
-    ROS_INFO("usage: add_two_ints_client X Y");
-    return 1;
-  }
 
   ros::NodeHandle n;
   ros::ServiceClient client = n.serviceClient<beginner_tutorials::PRM>("PRM");
   beginner_tutorials::PRM srv;
+
+  ros::NodeHandle nh;
+  ros::ServiceClient clientQ = nh.serviceClient<beginner_tutorials::PRMQuery>("PRMQuery");
+  beginner_tutorials::PRMQuery srvQ;
   //srv.request.a = 0;
 
   if (client.call(srv))
   {
-    std::cout<<((double)srv.response.runTime)<<std::endl;
+    //std::cout<<((double)55)<<std::endl;
+    /*
+    for(std::vector<beginner_tutorials::node>::const_iterator it = srv.response.nA.nodeLst.begin(); it != srv.response.nA.nodeLst.end(); ++it)
+    {
+	    beginner_tutorials::node g;
+	    g = *it;
+	    std::cout<<g.id<<std::endl;
+    }
+    */
+    srvQ.request.nA = srv.response.nA;
+    std::cout<<"Populate and connect called successfully!"<<std::endl;
+
   }
   else
   {
-    ROS_ERROR("Failed to call service add_two_ints");
+    ROS_ERROR("Failed to call service PRM");
     return 1;
   }
 
+
+
+  if(clientQ.call(srvQ)){
+    std::cout<<"Query called successfully!"<<std::endl;
+  }
+
+  else
+  {
+    ROS_ERROR("Failed to call service QUERY");
+    return 1;
+  }
   return 0;
 }

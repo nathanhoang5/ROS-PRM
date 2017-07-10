@@ -5,12 +5,16 @@
 
 enum class GameState{PLAY,EXIT};
 
-class MainGame
+class pQuery
 {
 public:
-	MainGame();
-	~MainGame();
+	pQuery();
+	~pQuery();
     int tester;
+    int sx;
+    int sy;
+    int ex;
+    int ey;
 	void run();
     beginner_tutorials::nodeArray n;
 
@@ -18,6 +22,8 @@ public:
 
 private:
 	void initSystems();
+	void fillLocalNodeArray();
+	void setStartEnd();
 	void gameLoop();
 	void processInput();
 

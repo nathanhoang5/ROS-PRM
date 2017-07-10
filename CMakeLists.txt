@@ -5,6 +5,7 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   rospy
   std_msgs
+  nav_msgs
   message_generation
 )
 
@@ -12,21 +13,26 @@ add_message_files(
   FILES
   node.msg
   nodeArray.msg
+  testSer.msg
 )
 
  add_service_files(
    FILES
    AddTwoInts.srv
    PRM.srv
+   PRMQuery.srv
  )
+
+
 
 generate_messages(
    DEPENDENCIES
    std_msgs
+   nav_msgs
  )
 
 catkin_package(
-CATKIN_DEPENDS message_runtime
+CATKIN_DEPENDS message_runtime nav_msgs std_msgs
 )
 
 set(CMAKE_CXX_FLAGS "-std=c++11 ${CMAKE_CXX_FLAGS}")
@@ -44,6 +50,7 @@ link_directories(
 )
 
 add_library(MainGame src/MainGame.cpp)
+add_library(pQuery src/pQuery.cpp)
 
 add_executable(talker src/talker.cpp)
 target_link_libraries(talker ${catkin_LIBRARIES})
@@ -55,6 +62,10 @@ add_dependencies(HelloWorld beginner_tutorials_generate_messages_cpp)
 
 add_executable(main src/main.cpp)
 target_link_libraries(main ${catkin_LIBRARIES} MainGame SDL2)
+add_dependencies(main beginner_tutorials_generate_messages_cpp)
+
+add_executable(pQueryRun src/pQueryRun.cpp)
+target_link_libraries(pQueryRun ${catkin_LIBRARIES} pQuery SDL2)
 add_dependencies(main beginner_tutorials_generate_messages_cpp)
 
 add_executable(listener src/listener.cpp)

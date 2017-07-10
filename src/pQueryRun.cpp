@@ -1,19 +1,24 @@
-#include "MainGame.h"
+#include "pQuery.h"
 #include "ros/ros.h"
-#include "beginner_tutorials/PRM.h"
+#include "beginner_tutorials/PRMQuery.h"
 #include <beginner_tutorials/node.h>
 #include <beginner_tutorials/nodeArray.h>
 #include <nav_msgs/OccupancyGrid.h>
 
 using namespace std;
 
-bool timeTaken(beginner_tutorials::PRM::Request  &req,
-               beginner_tutorials::PRM::Response &res){
+bool timeTaken(beginner_tutorials::PRMQuery::Request  &req,
+               beginner_tutorials::PRMQuery::Response &res){
     std::cout<<"running"<<std::endl;
-    MainGame mainGame;
+    pQuery queryGame;
+    queryGame.n = req.nA;
+    queryGame.sx = req.startX;
+    queryGame.sy = req.startY;
+    queryGame.ex = req.endX;
+    queryGame.ey = req.endY;
 	//res.runTime = mainGame.run();
-	mainGame.run();
-	res.nA = mainGame.n;
+	queryGame.run();
+	//res.nA = mainGame.n;
 	/*
 	for(std::vector<beginner_tutorials::node>::const_iterator it = mainGame.n.nodeLst.begin(); it != mainGame.n.nodeLst.end(); ++it)
 	{
@@ -29,12 +34,12 @@ bool timeTaken(beginner_tutorials::PRM::Request  &req,
 
 int main(int argc, char** argv) {
 
-	ros::init(argc, argv, "PRM_server");
+	ros::init(argc, argv, "PRMQuery_server");
 	ros::NodeHandle n;
 
-	ros::ServiceServer service = n.advertiseService("PRM",timeTaken);
+	ros::ServiceServer service = n.advertiseService("PRMQuery",timeTaken);
 
-	ROS_INFO("Ready to run PRM");
+	ROS_INFO("Ready to run QUERY");
 	ros::spin();
 
 	return 0;
