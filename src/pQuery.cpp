@@ -304,70 +304,17 @@ void pQuery::processInput() {
             case SDL_QUIT:
 				_gameState = GameState::EXIT;
 				break;
-			//Mouse is clicked
-			case SDL_MOUSEBUTTONDOWN:
-				//Select start position
-				if (selectPts&&selectStart) {
-					SDL_SetRenderDrawColor(_renderer, 0, 0, 0, 255);
-					SDL_RenderClear(_renderer);
-					//createObstacle();
-					startX = evnt.button.x;
-					startY = evnt.button.y;
-					selectStart = false;
-					cout << "Select end point" << endl;
-				}
-				//Select end position
-				else if (selectPts&&selectStart == false) {
-					endX = evnt.button.x;
-					endY = evnt.button.y;
-					selectStart = true;
-					selectPts = false;
-					stillRunning = true;
-					createObstacle();
-					createObstacle();
-					redrawSF();
-					cout << "Press space to populate map" << endl;
-				}
+
 			//case SDL_MOUSEMOTION:
 			//	cout << evnt.motion.x << " " << evnt.motion.y << endl;
 
-			//TODO: Fix clock
-			//If spacebar pressed
+            //If spacebar pressed
 			case SDL_KEYDOWN:
 				if (stillRunning) {
 					if (evnt.key.keysym.scancode == SDL_SCANCODE_SPACE) {
-                        cout<<"Pressed space"<<endl;
-						if (counter == 3) {
-							start = clock();
-							populate();
-							//populateTestMap();
-							createObstacle();
-							createObstacle();
 
-							i1 = clock();
-							cout << "Populate time: "<< (i1-start)/(double) CLOCKS_PER_SEC*1000 <<endl;
-
-							cout << "Press space to connect nodes" << endl;
-							counter = counter + 1;
-						}
-						else if (counter == 3) {
-							i2 = clock();
-							connect();
-                            fillROSNodeArray();
-							i3 = clock();
-							cout << "Connect time: "<< (i3-i2)/(double) CLOCKS_PER_SEC*1000 <<endl;
-							cout << "Press space to find path (A*)" << endl;
-							counter = counter + 1;
-							stillRunning = false;
-							//cout << "Collision check time: " << timeTaken << endl;
-						}
-						else if (counter == 0) {
-
-							//cout<<"querying"<<endl;
+                        if (counter == 0) {
 							i4 = clock();
-							//fillLocalNodeArray();
-							//cout <<"Called fill node array"<<endl;
-							//redrawSF();
 							query();
 							endClock = clock();
 							//Adds time taken for each section and print
@@ -379,7 +326,6 @@ void pQuery::processInput() {
 							runTime = time_elapsed;
 							stillRunning = false;
 
-
 							break;
 						}
 					}
@@ -388,146 +334,8 @@ void pQuery::processInput() {
 	}
 }
 
-
-//Populates map of numNodes nodes
-void pQuery::populate() {
-
-	//Used to populate array
-	static node* a;
-
-	//Starting point
-	nodeList[0] = new node(startX, startY, 0, 10000, 0);
-	nodeList[0]->initCArray();
-	nodeList[0]->setParent(-5); //Parent is -5
-	SDL_Rect startRect;
-	startRect.h = nodeSize;
-	startRect.w = nodeSize;
-	startRect.x = startX-nodeSize/2;
-	startRect.y = startY-nodeSize/2;
-	SDL_SetRenderDrawColor(_renderer, 0, 255, 0, 255);
-	SDL_RenderFillRect(_renderer, &startRect);
-
-	//Finish point
-	nodeList[1] = new node(endX, endY, 0, 10000, 1);
-	nodeList[1]->initCArray();
-	SDL_Rect finRect;
-	finRect.h = nodeSize;
-	finRect.w = nodeSize;
-	finRect.x = endX-nodeSize/2;
-	finRect.y = endY-nodeSize/2;
-	SDL_SetRenderDrawColor(_renderer, 255, 0, 0, 255);
-	SDL_RenderFillRect(_renderer, &finRect);
-
-	//Blue
-	SDL_SetRenderDrawColor(_renderer, 0, 0, 255, 255);
-
-	//Fill the rest of the array with random nodes
-	for (int i = 2; i < numNodes; i++) {
-		int randX = rand() % _screenWidth;
-		int randY = rand() % _screenHeight;
-		if(!occupancyGrid[randX][randY]){
-            a = new node(randX, randY, 0, 10000, i);
-            nodeList[i] = a;
-            nodeList[i]->initCArray();
-            SDL_Rect nodeRect;
-            nodeRect.h = nodeSize;
-            nodeRect.w = nodeSize;
-            nodeRect.x = randX-nodeSize/2;
-            nodeRect.y = randY-nodeSize/2;
-            SDL_RenderFillRect(_renderer, &nodeRect);
-		}
-		else{
-            i=i-1;
-		}
-	}
-
-	SDL_RenderPresent(_renderer);
-	cout << "Populated nodes!" << endl;
-}
-
-//Populates a map with chosen points
-void pQuery::populateTestMap() {
-
-	//Starting point
-	nodeList[0] = new node(startX, startY, 0, 10000, 0);
-	nodeList[0]->initCArray();
-	nodeList[0]->setParent(-5);
-	SDL_Rect startRect;
-	startRect.h = nodeSize;
-	startRect.w = nodeSize;
-	startRect.x = startX - nodeSize / 2;
-	startRect.y = startY - nodeSize / 2;
-	SDL_SetRenderDrawColor(_renderer, 0, 255, 0, 255);
-	SDL_RenderFillRect(_renderer, &startRect);
-
-	//Finish point
-	nodeList[1] = new node(endX, endY, 0, 10000, 1);
-	nodeList[1]->initCArray();
-	SDL_Rect finRect;
-	finRect.h = nodeSize;
-	finRect.w = nodeSize;
-	finRect.x = endX - nodeSize / 2;
-	finRect.y = endY - nodeSize / 2;
-	SDL_SetRenderDrawColor(_renderer, 255, 0, 0, 255);
-	SDL_RenderFillRect(_renderer, &finRect);
-
-	SDL_SetRenderDrawColor(_renderer, 0, 0, 255, 255);
-
-	nodeList[2] = new node(378, 86, 0, 10000, 2);
-	nodeList[3] = new node(388,47, 0, 10000, 3);
-	nodeList[4] = new node(377, 30, 0, 10000, 4);
-	nodeList[5] = new node(336, 14, 0, 10000, 5);
-	nodeList[6] = new node(324, 32, 0, 10000, 6);
-	nodeList[7] = new node(285, 10, 0, 10000, 7);
-	nodeList[8] = new node(273, 8, 0, 10000, 8);
-	nodeList[9] = new node(225, 11, 0, 10000, 9);
-	nodeList[10] = new node(190, 4, 0, 10000, 10);
-	nodeList[11] = new node(153, 21, 0, 10000, 11);
-	nodeList[12] = new node(105, 15, 0, 10000, 12);
-	nodeList[13] = new node(94, 46, 0, 10000, 13);
-	nodeList[14] = new node(90, 93, 0, 10000, 14);
-	nodeList[15] = new node(107, 100, 0, 10000, 15);
-	nodeList[16] = new node(120, 65, 0, 10000, 16);
-	nodeList[17] = new node(112, 25, 0, 10000, 17);
-
-	for (int i = 2; i < numNodes; i++) {
-		nodeList[i]->initCArray();
-		SDL_Rect nodeRect;
-		nodeRect.h = nodeSize;
-		nodeRect.w = nodeSize;
-		nodeRect.x = nodeList[i]->getxPos() - nodeSize / 2;
-		nodeRect.y = nodeList[i]->getyPos() - nodeSize / 2;
-		SDL_RenderFillRect(_renderer, &nodeRect);
-	}
-}
-
-//TODO: Initialize array in separate method
-//TODO: Delete deprecated rectangles
-//Sets position and draws obstacles. Can be called again to redraw
 void pQuery::createObstacle() {
-    //cout<<"Called createObs"<<endl;
-    /*
-	obs[0].h = 180;
-	obs[0].w = 40;
-	obs[0].x = 160;
-	obs[0].y = 50;
 
-	obs[1].h = 180;
-	obs[1].w = 40;
-	obs[1].x = 330;
-	obs[1].y = 50;
-
-	obs[2].h = 40;
-	obs[2].w = 130;
-	obs[2].x = 200;
-	obs[2].y = 120;
-
-	SDL_SetRenderDrawColor(_renderer, 75, 0, 130, 255);
-	for (int i = 0; i < numObs; i++) {
-		SDL_RenderFillRect(_renderer, &obs[i]);
-	}
-	SDL_RenderPresent(_renderer);
-    */
     SDL_SetRenderDrawColor(_renderer, 75, 0, 130, 255);
     for(int i = 0; i<sw; i++){
         for(int j = 0; j<sh; j++){
@@ -543,157 +351,6 @@ void pQuery::createObstacle() {
             }
         }
     }
-}
-
-//Connects nodes to its neighbors
-void pQuery::connect() {
-
-	//Number of connections
-
-    t1 = clock();
-	SDL_SetRenderDrawColor(_renderer, 0, 0, 255, 255);
-	//i = current node
-	for (int i = 0; i < numNodes; i++) {
-		//Check all nodes for possible connections (j=other nodes)
-
-		for (int j = 0; j < numNodes; j++){
-			//t1 = clock();
-			//Don't connect a node to itself
-			if (i == j) {}
-			//Two different nodes:
-
-			else {
-
-				int dX = nodeList[i]->getxPos() - nodeList[j]->getxPos();
-				int dY = nodeList[i]->getyPos() - nodeList[j]->getyPos();
-				//If nodes are less than the max distance apart and are not blocked by an obstacle, connect and draw line
-
-				if (static_cast<int>(sqrt(dX*dX + dY*dY)) < maxNodeDist){
-					if(Line(nodeList[i]->getxPos(), nodeList[i]->getyPos(), nodeList[j]->getxPos(), nodeList[j]->getyPos())){
-                        nodeList[i]->addConnection(j);
-                        SDL_RenderDrawLine(_renderer, nodeList[i]->getxPos(), nodeList[i]->getyPos(), nodeList[j]->getxPos(), nodeList[j]->getyPos());
-					}
-				}
-
-
-
-			}
-            //t2 = clock();
-            //timeTaken = timeTaken +(t2-t1)/(double) CLOCKS_PER_SEC*1000;
-		}
-
-	}
-	SDL_RenderPresent(_renderer);
-	cout << "Connected Nodes!" << endl;
-
-
-
-	//Re-draw obstacles and start/finish
-	createObstacle();
-	createObstacle();
-	redrawSF();
-	redrawSF();
-
-}
-
-
-//Returns true if two nodes are not obstructed
-bool pQuery::notObstructed(int x1, int y1, int x2, int y2) {
-	/*
-	//Check each obstacle
-	for (int i = 0; i < numObs; i++) {
-		//Horizontal line check
-		if ((y1 - y2) == 0 && (
-			(obs[i].x <maxNum(x1,x2) && obs[i].x>minNum(x1,x2)&&y1>obs[i].y && y1<obs[i].y+obs[i].h)
-			||(obs[i].x+obs[i].w<maxNum(x1,x2) && obs[i].x + obs[i].w>minNum(x1, x2) && y1>obs[i].y && y1<obs[i].y + obs[i].h)) ){
-			return false;
-		}
-		//Vertical line check
-		else if ((x1 - x2) == 0 && (
-			(obs[i].y <maxNum(y1, y2) && obs[i].y>minNum(y1, y2) && x1>obs[i].x && x1<obs[i].x + obs[i].w)
-			|| (obs[i].y +obs[i].h<maxNum(y1, y2) && obs[i].y+obs[i].h>minNum(y1, y2) && x1>obs[i].x && x1<obs[i].x + obs[i].w)
-			)) {
-			return false;
-		}
-		//Regular line check
-		else {
-			//Check each equation for each edge of rectangle
-			float dX = (float)(x2 - x1);
-			float dY = (float)(y2 - y1);
-			float slope = dY / dX;
-			float a = (float)(obs[i].x);
-			float b = (float)(obs[i].x+obs[i].w);
-			float c = (float)(obs[i].y);
-			float d = (float)(obs[i].y + obs[i].h);
-
-			if ( ((((slope*(a-x1)+y1) > obs[i].y) && ((slope*(a - x1) + y1) < obs[i].y+obs[i].h)) && (a<=maxNum(x1,x2) && a>=minNum(x1,x2)))
-				|| ((((slope*(b - x1) + y1) > obs[i].y) && ((slope*(b - x1) + y1) < obs[i].y + obs[i].h)) && (b <= maxNum(x1, x2) && b >= minNum(x1, x2)))
-				|| (((((c - y1)/slope + x1) > obs[i].x) && ((c - y1)/slope + x1) < obs[i].x + obs[i].w) && (c <= maxNum(y1, y2) && c >= minNum(y1, y2)))
-				|| (((((d - y1) / slope + x1) > obs[i].x) && ((d - y1) / slope + x1) < obs[i].x + obs[i].w) && (d <= maxNum(y1, y2) && d >= minNum(y1, y2)))) {
-
-				return false;
-			}
-
-		}
-	}*/
-	return true;
-}
-
-
-// Bresenham's line algorithm, taken from https://rosettacode.org/wiki/Bitmap/Bresenham%27s_line_algorithm#C.2B.2B
-bool pQuery::Line(  float x1, float y1,  float x2,  float y2)
-{
-
-
-  const bool steep = (fabs(y2 - y1) > fabs(x2 - x1));
-  if(steep)
-  {
-    std::swap(x1, y1);
-    std::swap(x2, y2);
-  }
-
-  if(x1 > x2)
-  {
-    std::swap(x1, x2);
-    std::swap(y1, y2);
-  }
-
-  const float dx = x2 - x1;
-  const float dy = fabs(y2 - y1);
-
-  float error = dx / 2.0f;
-  const int ystep = (y1 < y2) ? 1 : -1;
-  int y = (int)y1;
-
-  const int maxX = (int)x2;
-
-  for(int x=(int)x1; x<maxX; x++)
-  {
-    if(steep)
-    {
-        //SetPixel(y,x, color);
-        if(occupancyGrid[y][x]){
-            return false;
-        }
-    }
-    else
-    {
-        //SetPixel(x,y, color);
-        if(occupancyGrid[x][y]){
-
-            return false;
-        }
-    }
-
-    error -= dy;
-    if(error < 0)
-    {
-        y += ystep;
-        error += dx;
-    }
-  }
-
-  return true;
 }
 
 //Re-draw start and finish rectangles for clarity
@@ -720,19 +377,7 @@ void pQuery::redrawSF() {
 	SDL_RenderPresent(_renderer);
 }
 
-//Print all connections for all nodes
-void pQuery::printCn() {
-	for (int i = 0; i < numNodes; i++) {
-		for (int j = 0; j < numNodes; j++) {
-			if (!(nodeList[i]->getConnection(j)==-1)) {
-				cout << "Node " << i << " connected to node " << nodeList[i]->getConnection(j) << endl;
-			}
-			else {
-				break;
-			}
-		}
-	}
-}
+
 
 void pQuery::fillROSNodeArray(){
     for(int i = 0; i<numNodes; i++){
@@ -911,26 +556,4 @@ void pQuery::clearQueueList() {
 	for (int i = 0; i < numNodes; i++) {
 		addedNodes[i] = -1;
 	}
-}
-
-//To clearly show path: clear all connection lines, but re-draw nodes and obstacles
-void pQuery::redrawFin() {
-	SDL_SetRenderDrawColor(_renderer, 0, 0, 0, 255);
-	SDL_RenderClear(_renderer);
-	SDL_SetRenderDrawColor(_renderer, 0, 0, 255, 255);
-	for (int i = 0; i < numNodes; i++) {
-		SDL_Rect nodeRect;
-		nodeRect.h = nodeSize;
-		nodeRect.w = nodeSize;
-		nodeRect.x = nodeList[i]->getxPos() - nodeSize / 2;
-		nodeRect.y = nodeList[i]->getyPos() - nodeSize / 2;
-		SDL_RenderFillRect(_renderer, &nodeRect);
-	}
-	redrawSF();
-	//createObstacle();
-}
-
-void pQuery::clearRenderer(){
-    SDL_SetRenderDrawColor(_renderer, 0, 0, 0, 255);
-    SDL_RenderClear(_renderer);
 }
