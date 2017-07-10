@@ -17,10 +17,15 @@ int main(int argc, char **argv)
   ros::ServiceClient clientQ = nh.serviceClient<beginner_tutorials::PRMQuery>("PRMQuery");
   beginner_tutorials::PRMQuery srvQ;
   //srv.request.a = 0;
+  srv.request.startX = 20;
+  srv.request.startY = 20;
+  srv.request.endX = 460;
+  srv.request.startY = 270;
+  srv.request.numNodes = 500;
+  srv.request.maxDistance = 50;
 
   if (client.call(srv))
   {
-    //std::cout<<((double)55)<<std::endl;
     /*
     for(std::vector<beginner_tutorials::node>::const_iterator it = srv.response.nA.nodeLst.begin(); it != srv.response.nA.nodeLst.end(); ++it)
     {

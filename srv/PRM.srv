@@ -2,6 +2,8 @@ float64 startX
 float64 startY
 float64 endX
 float64 endY
+int32 numNodes
+int32 maxDistance
 nav_msgs/OccupancyGrid o
 ---
 nodeArray nA

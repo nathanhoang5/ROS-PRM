@@ -8,10 +8,10 @@ enum class GameState{PLAY,EXIT};
 class MainGame
 {
 public:
-	MainGame();
+	MainGame(int nN);
 	~MainGame();
-    int tester;
-	void run();
+    int nNodes;
+	void run(int sx, int sy, int ex, int ey, int nN, int mD);
     beginner_tutorials::nodeArray n;
 
 

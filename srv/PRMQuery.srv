@@ -3,6 +3,7 @@ float64 startX
 float64 startY
 float64 endX
 float64 endY
+int32 numNodes
 nav_msgs/OccupancyGrid o
 ---
 nodeArray nFinal

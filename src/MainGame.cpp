@@ -12,17 +12,17 @@ using namespace std;
 
 
 //Number of nodes
-const int numNodes = 25;
 
+int numNodes;
 //Start and end positions
-int startX = 120;
-int startY = 130;
-int endX = 400;
-int endY = 130;
+int startX;
+int startY;
+int endX;
+int endY;
 
 //Screen height and screen width
-const int sh = 300;
 const int sw = 500;
+const int sh = 300;
 
 //Binary Occupancy map
 int occupancyGrid[sw][sh];
@@ -34,7 +34,7 @@ const int nodeSize = 3;
 bool stillRunning = false;
 
 //True at start, allows selection of start and end points
-bool selectPts = true;
+bool selectPts = false;
 
 //Number of obstacles
 const int numObs = 3;
@@ -62,7 +62,8 @@ int aNCounter = 0;
 
 double runTime = 0;
 
-//beginner_tutorials::nodeArray n;
+
+
 
 //Each point stored as a node
 class node
@@ -82,6 +83,8 @@ class node
 	int * connections = new int [numNodes];
 	//Counter for index of added nodes array
 	int connectionCounter = 0;
+
+
 
 public:
 	node(int xp, int yp, int d, int p, int a)
@@ -155,20 +158,22 @@ public:
 	}
 };
 
+
 //List of nodes
-node* nodeList[numNodes];
+node** nodeList = new node* [numNodes];
 
 //Initialize window parameters
-MainGame::MainGame()
+MainGame::MainGame(int nN)
 {
+    numNodes = nN;
 	_window = nullptr;
 	_renderer = nullptr;
 	_screenWidth = sw;
 	_screenHeight = sh;
 	_gameState = GameState::PLAY;
-	tester = 35;
-}
 
+
+}
 //Can be called to exit application when error is thrown
 void fatalError(string errorString) {
 	cout << errorString << endl;
@@ -182,12 +187,16 @@ void fatalError(string errorString) {
 //Destructor?? I don't know what this is...
 MainGame::~MainGame()
 {
-
+    delete []nodeList;
+    delete []closedNodeList;
+    delete []addedNodes;
 }
 
 
 //Called from main class, starts application depending on if selectPoints==true, then starts gameLoop()
-void MainGame::run() {
+void MainGame::run(int sx, int sy, int ex, int ey, int nN, int mD) {
+
+	//maxDist
 	initSystems();
 
     createObstacle();
@@ -199,6 +208,10 @@ void MainGame::run() {
 
     cout << "Select start point" << endl;
 
+    startX = sx;
+    startY = sy;
+    endX = ex;
+    endY = ey;
 
 
 	gameLoop();
