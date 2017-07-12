@@ -31,7 +31,7 @@ int occupancyGrid[sw][sh];
 const int nodeSize = 3;
 
 //True after start and end have been selected, takes spacebar input
-bool stillRunning = false;
+bool stillRunning = true;
 
 //True at start, allows selection of start and end points
 bool selectPts = false;
@@ -43,16 +43,16 @@ const int numObs = 3;
 SDL_Rect* obs = new SDL_Rect[numObs];
 
 //Max distance allowed between nodes
-const int maxNodeDist = 5000;
+int maxNodeDist = 5000;
 
 //Stores path from start to finish
 string pathList;
 
 //List of closed nodes
-int * closedNodeList = new int [numNodes];
+int * closedNodeList;
 
 //List of new connections to be added, cleared for each new node evaluated
-int * addedNodes = new int[numNodes];
+int * addedNodes;
 
 //Counter for index of closed node array
 int closedCounter = 0;
@@ -99,6 +99,7 @@ public:
 	int getParent() const { return parent; }
 	int getArrayValue() const { return arrayValue; }
 	int getConnection(int n) {	return connections[n];	}
+	int getConnectionCounter(){  return connectionCounter;  }
 	int* getConnectionArray(){  return connections; }
 
 
@@ -160,7 +161,7 @@ public:
 
 
 //List of nodes
-node** nodeList = new node* [numNodes];
+node** nodeList;
 
 //Initialize window parameters
 MainGame::MainGame(int nN)
@@ -172,6 +173,9 @@ MainGame::MainGame(int nN)
 	_screenHeight = sh;
 	_gameState = GameState::PLAY;
 
+	nodeList = new node* [numNodes];
+	closedNodeList = new int[numNodes];
+	addedNodes = new int[numNodes];
 
 }
 //Can be called to exit application when error is thrown
@@ -187,14 +191,14 @@ void fatalError(string errorString) {
 //Destructor?? I don't know what this is...
 MainGame::~MainGame()
 {
-    delete []nodeList;
-    delete []closedNodeList;
-    delete []addedNodes;
+    //delete []nodeList;
+    //delete []closedNodeList;
+    //delete []addedNodes;
 }
 
 
 //Called from main class, starts application depending on if selectPoints==true, then starts gameLoop()
-void MainGame::run(int sx, int sy, int ex, int ey, int nN, int mD) {
+void MainGame::run(int sx, int sy, int ex, int ey, int mD) {
 
 	//maxDist
 	initSystems();
@@ -206,14 +210,16 @@ void MainGame::run(int sx, int sy, int ex, int ey, int nN, int mD) {
 
 
 
-    cout << "Select start point" << endl;
+    cout << "Press space to populate" << endl;
 
     startX = sx;
     startY = sy;
     endX = ex;
     endY = ey;
+    maxNodeDist = mD;
 
-
+    redrawSF();
+    redrawSF();
 	gameLoop();
 
 	SDL_SetRenderDrawColor(_renderer, 0, 0, 0, 255);
@@ -221,6 +227,10 @@ void MainGame::run(int sx, int sy, int ex, int ey, int nN, int mD) {
     SDL_DestroyWindow(_window);
     SDL_Quit();
 
+    for(int i = 0; i<numNodes; i++) delete nodeList[i];
+    delete []nodeList;
+    delete []closedNodeList;
+    delete []addedNodes;
 	//cout<<"GameState = EXIT"<<endl;
 }
 
@@ -242,8 +252,8 @@ void MainGame::initSystems() {
 	}
 	closedNodeList[0] = 0;
 	closedCounter = closedCounter + 1;
-
-	selectPts = true;
+    stillRunning = true;
+	selectPts = false;
 
 
 
@@ -326,7 +336,7 @@ void MainGame::processInput() {
 							i3 = clock();
 							cout << "Connect time: "<< (i3-i2)/(double) CLOCKS_PER_SEC*1000 <<endl;
 							//cout << "Press space to find path (A*)" << endl;
-							counter = counter + 1;
+                            cout << "----------------------"<<endl;
 							counter = 0;
 
 							stillRunning = false;
@@ -553,12 +563,15 @@ void MainGame::fillROSNodeArray(){
         curN.id =nodeList[i]->getArrayValue();
         curN.x = nodeList[i]->getxPos();
         curN.y = nodeList[i]->getyPos();
+        curN.connectionCounter = nodeList[i]->getConnectionCounter();
+
         int * cnA = nodeList[i]->getConnectionArray();
 
         for(int j = 0; j<numNodes; j++){
             curN.connections.push_back(cnA[j]);
         }
-
+        //cout<<"Num connections: "<<curN.connections.size()<<endl;
         n.nodeLst.push_back(curN);
     }
+    //cout<<numNodes<<n.nodeLst.size()<<endl;
 }

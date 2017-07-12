@@ -11,7 +11,7 @@ public:
 	MainGame(int nN);
 	~MainGame();
     int nNodes;
-	void run(int sx, int sy, int ex, int ey, int nN, int mD);
+	void run(int sx, int sy, int ex, int ey, int mD);
     beginner_tutorials::nodeArray n;
 
 

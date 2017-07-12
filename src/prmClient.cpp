@@ -20,9 +20,15 @@ int main(int argc, char **argv)
   srv.request.startX = 20;
   srv.request.startY = 20;
   srv.request.endX = 460;
-  srv.request.startY = 270;
+  srv.request.endY = 270;
   srv.request.numNodes = 500;
   srv.request.maxDistance = 50;
+
+  srvQ.request.numNodes = srv.request.numNodes;
+  srvQ.request.startX = 20;
+  srvQ.request.startY = 270;
+  srvQ.request.endX = 460;
+  srvQ.request.endY = 20;
 
   if (client.call(srv))
   {

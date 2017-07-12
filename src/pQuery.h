@@ -8,7 +8,7 @@ enum class GameState{PLAY,EXIT};
 class pQuery
 {
 public:
-	pQuery();
+	pQuery(int nN);
 	~pQuery();
     int tester;
     int sx;
@@ -24,11 +24,14 @@ private:
 	void initSystems();
 	void fillLocalNodeArray();
 	void setStartEnd();
+	void resetConnection(int nodeNumber);
 	void gameLoop();
 	void processInput();
 	void createObstacle();
 	void redrawSF();
 	void fillROSNodeArray();
+	void connect(int a);
+	bool Line(  float x1, float y1,  float x2,  float y2);
 	void query();
 	int getMoveDist(int a, int b);
 	void foundNode(int a);

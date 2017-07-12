@@ -12,7 +12,7 @@ bool timeTaken(beginner_tutorials::PRM::Request  &req,
     std::cout<<"running"<<std::endl;
     MainGame mainGame(req.numNodes);
 	//res.runTime = mainGame.run();
-	mainGame.run(req.startX, req.startY, req.endX, req.endY, req.numNodes, req.maxDistance);
+	mainGame.run(req.startX, req.startY, req.endX, req.endY, req.maxDistance);
 	res.nA = mainGame.n;
 	/*
 	for(std::vector<beginner_tutorials::node>::const_iterator it = mainGame.n.nodeLst.begin(); it != mainGame.n.nodeLst.end(); ++it)

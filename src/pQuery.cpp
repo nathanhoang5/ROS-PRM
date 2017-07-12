@@ -12,7 +12,7 @@ using namespace std;
 
 
 //Number of nodes
-const int numNodes = 25;
+int numNodes;
 
 //Start and end positions
 int startX = 120;
@@ -49,10 +49,10 @@ const int maxNodeDist = 5000;
 string pathList;
 
 //List of closed nodes
-int * closedNodeList = new int [numNodes];
+int * closedNodeList;
 
 //List of new connections to be added, cleared for each new node evaluated
-int * addedNodes = new int[numNodes];
+int * addedNodes;
 
 //Counter for index of closed node array
 int closedCounter = 0;
@@ -79,7 +79,7 @@ class node
 	//Value of node in node array
 	int arrayValue;
 	//List of node connections
-	int * connections = new int [numNodes];
+	int * connections;
 	//Counter for index of added nodes array
 	int connectionCounter = 0;
 
@@ -127,15 +127,22 @@ public:
 
 	//Initializes all values of connection array
 	void initCArray() {
+        connections = new int [numNodes];
 		for (int i = 0; i < numNodes; i++) {
 			connections[i] = -1;
 		}
 	}
 
+
+
 	//Adds connection to a neighboring node
 	void addConnection(int c) {
 		connections[connectionCounter] = c;
 		connectionCounter = connectionCounter + 1;
+	}
+
+	void resetConnection(int c){
+        connections[c]=-2;
 	}
 
 	//Prints all connections
@@ -146,6 +153,10 @@ public:
 				cout << connections[i];
 			}
 		}
+	}
+
+	void deleteCArray(){
+        delete []connections;
 	}
 
 };
@@ -160,17 +171,24 @@ public:
 };
 
 //List of nodes
-node* nodeList[numNodes];
+node** nodeList;
+//node* nodeList[numNodes];
 
 //Initialize window parameters
-pQuery::pQuery()
+pQuery::pQuery(int nN)
 {
+
+    numNodes = nN;
+
 	_window = nullptr;
 	_renderer = nullptr;
 	_screenWidth = sw;
 	_screenHeight = sh;
 	_gameState = GameState::PLAY;
-	tester = 35;
+	nodeList = new node* [numNodes];
+	closedNodeList = new int[numNodes];
+	addedNodes = new int[numNodes];
+
 }
 
 //Can be called to exit application when error is thrown
@@ -187,6 +205,7 @@ void fatalError(string errorString) {
 pQuery::~pQuery()
 {
 
+
 }
 
 
@@ -201,7 +220,7 @@ void pQuery::run() {
 
 
 
-    cout << "Select start point" << endl;
+    cout << "Press space to query" << endl;
 
 
 
@@ -211,6 +230,15 @@ void pQuery::run() {
 	SDL_RenderClear(_renderer);
     SDL_DestroyWindow(_window);
     SDL_Quit();
+    for(int i = 0; i<numNodes; i++) {
+        //nodeList[i]->deleteCArray();
+        delete nodeList[i];
+    }
+
+
+    delete []nodeList;
+    delete []closedNodeList;
+    delete []addedNodes;
 
 	//cout<<"GameState = EXIT"<<endl;
 }
@@ -253,7 +281,8 @@ void pQuery::fillLocalNodeArray(){
 
 	    nodeList[aPos] = new node(g.x, g.y, 0, 10000, g.id);
 	    nodeList[aPos]->initCArray();
-	    //std::cout<<g.id<<std::endl;
+	    //nodeList[aPos]->setConnectionCounter(g.connectionCounter);
+	    //std::cout<<g.connectionCounter<<std::endl;
 
 	    for(std::vector<int>::const_iterator bit = g.connections.begin(); bit != g.connections.end(); ++bit)
         {
@@ -271,13 +300,37 @@ void pQuery::fillLocalNodeArray(){
 }
 
 void pQuery::setStartEnd(){
-    nodeList[0]->setXY(sx,sy);
-    nodeList[1]->setXY(ex,ey);
     startX = sx;
     startY = sy;
     endX = ex;
     endY = ey;
+
+    if (nodeList[0]->getxPos()!=sx&&nodeList[0]->getyPos()!=sy){
+        nodeList[0]->setXY(sx,sy);
+        resetConnection(0);
+        connect(0);
+    }
+
+
+    if (nodeList[1]->getxPos()!=sx&&nodeList[1]->getyPos()!=sy){
+        nodeList[1]->setXY(ex,ey);
+        resetConnection(1);
+        connect(1);
+    }
+
+
+
+
 }
+
+void pQuery::resetConnection(int nodeNumber){
+    for(int i = 0; i<numNodes; i++){
+        for(int j = 0; j<2; j++){
+            if(nodeList[i]->getConnection(j) == nodeNumber) nodeList[i]->resetConnection(j);
+        }
+    }
+}
+
 
 //If there is no error, continue to process input
 void pQuery::gameLoop() {
@@ -318,9 +371,11 @@ void pQuery::processInput() {
 							query();
 							endClock = clock();
 							//Adds time taken for each section and print
-							double time_elapsed = (double(i1 - start) + double(i3 - i2) + double(endClock - i4))/(double) CLOCKS_PER_SEC *1000;
+							double time_elapsed = double(endClock - i4)/(double) CLOCKS_PER_SEC *1000;
 							//cout << "Query time: "<< (endClock-i4)/(double) CLOCKS_PER_SEC*1000 <<endl;
 							cout << "Time to calculate the route (ms): " << time_elapsed << endl;
+
+							cout << "----------------------"<<endl;
 							//cout << "Clocks per second: " << (double) CLOCKS_PER_SEC<<endl;
 							//End program
 							runTime = time_elapsed;
@@ -393,6 +448,110 @@ void pQuery::fillROSNodeArray(){
 
         n.nodeLst.push_back(curN);
     }
+}
+
+//Connects nodes to its neighbors
+void pQuery::connect(int a) {
+
+	//Number of connections
+
+
+	SDL_SetRenderDrawColor(_renderer, 0, 0, 255, 255);
+	//i = current node
+	int i = a;
+		//Check all nodes for possible connections (j=other nodes)
+
+
+    for (int j = 0; j < numNodes; j++){
+        //t1 = clock();
+        //Don't connect a node to itself
+        if (i == j) {}
+        //Two different nodes:
+        else {
+            int dX = nodeList[i]->getxPos() - nodeList[j]->getxPos();
+            int dY = nodeList[i]->getyPos() - nodeList[j]->getyPos();
+            //If nodes are less than the max distance apart and are not blocked by an obstacle, connect and draw line
+
+            if (static_cast<int>(sqrt(dX*dX + dY*dY)) < maxNodeDist){
+                if(Line(nodeList[i]->getxPos(), nodeList[i]->getyPos(), nodeList[j]->getxPos(), nodeList[j]->getyPos())){
+                    nodeList[i]->addConnection(j);
+                    nodeList[j]->addConnection(i);
+                    SDL_RenderDrawLine(_renderer, nodeList[i]->getxPos(), nodeList[i]->getyPos(), nodeList[j]->getxPos(), nodeList[j]->getyPos());
+                }
+            }
+        }
+            //t2 = clock();
+            //timeTaken = timeTaken +(t2-t1)/(double) CLOCKS_PER_SEC*1000;
+    }
+
+
+	SDL_RenderPresent(_renderer);
+	cout << "Connected Nodes!" << endl;
+
+
+
+	//Re-draw obstacles and start/finish
+	createObstacle();
+	createObstacle();
+	redrawSF();
+	redrawSF();
+
+}
+
+// Bresenham's line algorithm, taken from https://rosettacode.org/wiki/Bitmap/Bresenham%27s_line_algorithm#C.2B.2B
+bool pQuery::Line(  float x1, float y1,  float x2,  float y2)
+{
+
+
+  const bool steep = (fabs(y2 - y1) > fabs(x2 - x1));
+  if(steep)
+  {
+    std::swap(x1, y1);
+    std::swap(x2, y2);
+  }
+
+  if(x1 > x2)
+  {
+    std::swap(x1, x2);
+    std::swap(y1, y2);
+  }
+
+  const float dx = x2 - x1;
+  const float dy = fabs(y2 - y1);
+
+  float error = dx / 2.0f;
+  const int ystep = (y1 < y2) ? 1 : -1;
+  int y = (int)y1;
+
+  const int maxX = (int)x2;
+
+  for(int x=(int)x1; x<maxX; x++)
+  {
+    if(steep)
+    {
+        //SetPixel(y,x, color);
+        if(occupancyGrid[y][x]){
+            return false;
+        }
+    }
+    else
+    {
+        //SetPixel(x,y, color);
+        if(occupancyGrid[x][y]){
+
+            return false;
+        }
+    }
+
+    error -= dy;
+    if(error < 0)
+    {
+        y += ystep;
+        error += dx;
+    }
+  }
+
+  return true;
 }
 
 //Priority queue to store open (activated) nodes

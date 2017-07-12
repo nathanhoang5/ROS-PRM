@@ -10,7 +10,7 @@ using namespace std;
 bool timeTaken(beginner_tutorials::PRMQuery::Request  &req,
                beginner_tutorials::PRMQuery::Response &res){
     std::cout<<"running"<<std::endl;
-    pQuery queryGame;
+    pQuery queryGame(req.numNodes);
     queryGame.n = req.nA;
     queryGame.sx = req.startX;
     queryGame.sy = req.startY;
