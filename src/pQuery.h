@@ -18,7 +18,7 @@ public:
     int ey;
 	void run();
     beginner_tutorials::nodeArray n;
-
+    beginner_tutorials::nodeArray nodePath;
 
 
 private:

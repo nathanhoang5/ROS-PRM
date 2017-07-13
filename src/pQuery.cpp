@@ -700,6 +700,11 @@ void pQuery::foundNode(int a) {
 	pathList += to_string(nodeList[curNode]->getArrayValue());
 	pathList += " ";
 
+    beginner_tutorials::node curN;
+    curN.id = nodeList[1]->getArrayValue();
+    curN.x = nodeList[1]->getxPos();
+    curN.y = nodeList[1]->getyPos();
+    nodePath.nodeLst.push_back(curN);
 
 	//Draw line from finish to connecting node
 	SDL_RenderDrawLine(_renderer, nodeList[curNode]->getxPos(), nodeList[curNode]->getyPos(), nodeList[1]->getxPos(), nodeList[1]->getyPos());
@@ -715,6 +720,12 @@ void pQuery::foundNode(int a) {
             //cout<<"PosY: " << nodeList[curNode]->getyPos()<<endl;
             break;
         }
+
+        curN.id =nodeList[curNode]->getArrayValue();
+        curN.x = nodeList[curNode]->getxPos();
+        curN.y = nodeList[curNode]->getyPos();
+        nodePath.nodeLst.push_back(curN);
+
 		//Add the current node to the path record and draw line
 		pathList += to_string(nodeList[curNode]->getParent());
 		pathList += " ";
@@ -722,6 +733,11 @@ void pQuery::foundNode(int a) {
 		//Find the parent of the current node
 		curNode = nodeList[curNode]->getParent();
 	}
+
+	curN.id = nodeList[0]->getArrayValue();
+    curN.x = nodeList[0]->getxPos();
+    curN.y = nodeList[0]->getyPos();
+    nodePath.nodeLst.push_back(curN);
 	//Display path record and draw path
 	//cout << "Path: " << pathList << endl;
 	//cout <<"PQ Size Before: "<<pq.size()<<endl;
@@ -735,6 +751,7 @@ void pQuery::foundNode(int a) {
 	}
 	pathList = "";
 	SDL_RenderPresent(_renderer);
+	reverse(nodePath.nodeLst.begin(),nodePath.nodeLst.end());
 
 }
 

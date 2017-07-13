@@ -18,6 +18,7 @@ bool timeTaken(beginner_tutorials::PRMQuery::Request  &req,
     queryGame.ey = req.endY;
 	//res.runTime = mainGame.run();
 	queryGame.run();
+	res.nFinal = queryGame.nodePath;
 	//res.nA = mainGame.n;
 	/*
 	for(std::vector<beginner_tutorials::node>::const_iterator it = mainGame.n.nodeLst.begin(); it != mainGame.n.nodeLst.end(); ++it)

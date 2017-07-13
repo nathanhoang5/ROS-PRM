@@ -90,6 +90,13 @@ int main(int argc, char **argv)
 
 
   if(clientQ.call(srvQ)){
+    std::cout<<"Path:"<<std::endl;
+    for(std::vector<beginner_tutorials::node>::const_iterator it = srvQ.response.nFinal.nodeLst.begin(); it != srvQ.response.nFinal.nodeLst.end(); ++it)
+    {
+	    beginner_tutorials::node g;
+	    g = *it;
+	    std::cout<<"Node: "<<g.id<<" xPos: "<<g.x<<" yPos: "<<g.y<<std::endl;
+    }
     std::cout<<"Query called successfully!"<<std::endl;
   }
 
