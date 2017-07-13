@@ -3,6 +3,7 @@
 #include "beginner_tutorials/PRMQuery.h"
 #include <beginner_tutorials/node.h>
 #include <beginner_tutorials/nodeArray.h>
+#include <nav_msgs/OccupancyGrid.h>
 #include <cstdlib>
 
 int main(int argc, char **argv)
@@ -29,6 +30,32 @@ int main(int argc, char **argv)
   srvQ.request.startY = 270;
   srvQ.request.endX = 460;
   srvQ.request.endY = 20;
+
+  const int sw = 500;
+  const int sh = 300;
+  nav_msgs::OccupancyGrid obs;
+  obs.info.width = sw;
+  obs.info.height = sh;
+  int occupancyGrid[sw][sh];
+  for(int i = 0; i<sw; i++){
+        for(int j = 0; j<sh; j++){
+            if(i<350&&i>150&&j<200&&j>100){
+                occupancyGrid[i][j]=1;
+            }
+            else{
+                occupancyGrid[i][j]=0;
+            }
+        }
+  }
+
+  for(int j = 0; j<sh; j++){
+    for(int i = 0; i<sw; i++){
+        obs.data.push_back(occupancyGrid[i][j]);
+
+    }
+  }
+  srv.request.o = obs;
+  srvQ.request.o = srv.request.o;
 
   if (client.call(srv))
   {

@@ -2,17 +2,19 @@
 #include <SDL.h>
 #include <beginner_tutorials/node.h>
 #include <beginner_tutorials/nodeArray.h>
+#include <nav_msgs/OccupancyGrid.h>
 
 enum class GameState{PLAY,EXIT};
 
 class MainGame
 {
 public:
-	MainGame(int nN);
+	MainGame(int nN, nav_msgs::OccupancyGrid ob);
 	~MainGame();
     int nNodes;
 	void run(int sx, int sy, int ex, int ey, int mD);
     beginner_tutorials::nodeArray n;
+
 
 
 
@@ -27,6 +29,7 @@ private:
 	void connect();
 	void redrawSF();
 	void fillROSNodeArray();
+	void parseOGrid();
 	void redrawFin();
 
 

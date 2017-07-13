@@ -5,8 +5,11 @@
 #include <chrono>
 #include <ratio>
 #include <ctime>
+#include <vector>
 #include <beginner_tutorials/node.h>
 #include <beginner_tutorials/nodeArray.h>
+#include <nav_msgs/OccupancyGrid.h>
+
 
 using namespace std;
 
@@ -25,7 +28,7 @@ const int sh = 300;
 const int sw = 500;
 
 //Binary Occupancy map
-int occupancyGrid[sw][sh];
+vector<vector<int>> occupancyGrid;
 
 //Size of node rectangles
 const int nodeSize = 3;
@@ -39,9 +42,6 @@ bool selectPts = true;
 //Number of obstacles
 const int numObs = 3;
 
-//Array storing all obstacles
-SDL_Rect* obs = new SDL_Rect[numObs];
-
 //Max distance allowed between nodes
 const int maxNodeDist = 5000;
 
@@ -49,10 +49,10 @@ const int maxNodeDist = 5000;
 string pathList;
 
 //List of closed nodes
-int * closedNodeList;
+vector<int> closedNodeList;
 
 //List of new connections to be added, cleared for each new node evaluated
-int * addedNodes;
+vector<int> addedNodes;
 
 //Counter for index of closed node array
 int closedCounter = 0;
@@ -79,7 +79,7 @@ class node
 	//Value of node in node array
 	int arrayValue;
 	//List of node connections
-	int * connections = new int [numNodes];
+	vector<int> connections;
 	//Counter for index of added nodes array
 	int connectionCounter = 0;
 
@@ -96,7 +96,7 @@ public:
 	int getParent() const { return parent; }
 	int getArrayValue() const { return arrayValue; }
 	int getConnection(int n) {	return connections[n];	}
-	int* getConnectionArray(){  return connections; }
+	vector<int> getConnectionArray(){  return connections; }
 	int getConnectionCounter(){  return connectionCounter;  }
 
     void setXY(int x, int y){
@@ -129,9 +129,7 @@ public:
 	//Initializes all values of connection array
 	void initCArray() {
 
-		for (int i = 0; i < numNodes; i++) {
-			connections[i] = -1;
-		}
+		connections.resize(numNodes, -1);
 	}
 
 
@@ -181,9 +179,7 @@ public:
 		}
 	}
 
-	void deleteCArray(){
-        delete []connections;
-	}
+
 
 };
 
@@ -197,7 +193,7 @@ public:
 };
 
 //List of nodes
-node** nodeList;
+vector<node*> nodeList;
 //node* nodeList[numNodes];
 
 //Initialize window parameters
@@ -211,9 +207,12 @@ pQuery::pQuery(int nN)
 	_screenWidth = sw;
 	_screenHeight = sh;
 	_gameState = GameState::PLAY;
-	nodeList = new node* [numNodes];
-	closedNodeList = new int[numNodes];
-	addedNodes = new int[numNodes];
+
+
+	occupancyGrid.resize(sw, vector<int>(sh, 0));
+	nodeList.resize(numNodes,nullptr);
+	closedNodeList.resize(numNodes,0);
+	addedNodes.resize(numNodes,0);
 
 }
 
@@ -265,9 +264,7 @@ void pQuery::run() {
     }
 
 
-    delete []nodeList;
-    delete []closedNodeList;
-    delete []addedNodes;
+
 
 	//cout<<"GameState = EXIT"<<endl;
 }
@@ -502,7 +499,7 @@ void pQuery::fillROSNodeArray(){
         curN.id =nodeList[i]->getArrayValue();
         curN.x = nodeList[i]->getxPos();
         curN.y = nodeList[i]->getyPos();
-        int * cnA = nodeList[i]->getConnectionArray();
+        vector<int>cnA = nodeList[i]->getConnectionArray();
 
         for(int j = 0; j<numNodes; j++){
             curN.connections.push_back(cnA[j]);

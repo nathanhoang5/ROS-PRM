@@ -5,12 +5,13 @@
 #include <beginner_tutorials/nodeArray.h>
 #include <nav_msgs/OccupancyGrid.h>
 
+
 using namespace std;
 
 bool timeTaken(beginner_tutorials::PRM::Request  &req,
                beginner_tutorials::PRM::Response &res){
     std::cout<<"running"<<std::endl;
-    MainGame mainGame(req.numNodes);
+    MainGame mainGame(req.numNodes, req.o);
 	//res.runTime = mainGame.run();
 	mainGame.run(req.startX, req.startY, req.endX, req.endY, req.maxDistance);
 	res.nA = mainGame.n;

@@ -7,6 +7,8 @@
 #include <ctime>
 #include <beginner_tutorials/node.h>
 #include <beginner_tutorials/nodeArray.h>
+#include <nav_msgs/OccupancyGrid.h>
+#include <vector>
 
 using namespace std;
 
@@ -21,11 +23,14 @@ int endX;
 int endY;
 
 //Screen height and screen width
-const int sw = 500;
-const int sh = 300;
+int sw = 500;
+int sh = 300;
 
 //Binary Occupancy map
-int occupancyGrid[sw][sh];
+//int occupancyGrid[sw][sh];
+vector<vector<int>> occupancyGrid;
+
+nav_msgs::OccupancyGrid og;
 
 //Size of node rectangles
 const int nodeSize = 3;
@@ -39,9 +44,6 @@ bool selectPts = false;
 //Number of obstacles
 const int numObs = 3;
 
-//Array storing all obstacles
-SDL_Rect* obs = new SDL_Rect[numObs];
-
 //Max distance allowed between nodes
 int maxNodeDist = 5000;
 
@@ -49,10 +51,10 @@ int maxNodeDist = 5000;
 string pathList;
 
 //List of closed nodes
-int * closedNodeList;
+vector<int> closedNodeList;
 
 //List of new connections to be added, cleared for each new node evaluated
-int * addedNodes;
+vector<int> addedNodes;
 
 //Counter for index of closed node array
 int closedCounter = 0;
@@ -80,7 +82,7 @@ class node
 	//Value of node in node array
 	int arrayValue;
 	//List of node connections
-	int * connections = new int [numNodes];
+	vector<int> connections;
 	//Counter for index of added nodes array
 	int connectionCounter = 0;
 
@@ -100,7 +102,7 @@ public:
 	int getArrayValue() const { return arrayValue; }
 	int getConnection(int n) {	return connections[n];	}
 	int getConnectionCounter(){  return connectionCounter;  }
-	int* getConnectionArray(){  return connections; }
+	vector<int> getConnectionArray(){  return connections; }
 
 
 	//Sets movement cost to get to this node, then the priority (for the priority queue)
@@ -127,9 +129,7 @@ public:
 
 	//Initializes all values of connection array
 	void initCArray() {
-		for (int i = 0; i < numNodes; i++) {
-			connections[i] = -1;
-		}
+		connections.resize(numNodes, -1);
 	}
 
 	//Adds connection to a neighboring node
@@ -161,21 +161,28 @@ public:
 
 
 //List of nodes
-node** nodeList;
+vector<node*> nodeList;
 
 //Initialize window parameters
-MainGame::MainGame(int nN)
+MainGame::MainGame(int nN, nav_msgs::OccupancyGrid ob)
 {
     numNodes = nN;
+    og = ob;
+
+
 	_window = nullptr;
 	_renderer = nullptr;
+	sw = ob.info.width;
+	sh = ob.info.height;
 	_screenWidth = sw;
 	_screenHeight = sh;
 	_gameState = GameState::PLAY;
 
-	nodeList = new node* [numNodes];
-	closedNodeList = new int[numNodes];
-	addedNodes = new int[numNodes];
+	//nodeList = new node* [numNodes];
+	occupancyGrid.resize(sw, vector<int>(sh, 0));
+	nodeList.resize(numNodes,nullptr);
+	closedNodeList.resize(numNodes,0);
+	addedNodes.resize(numNodes,0);
 
 }
 //Can be called to exit application when error is thrown
@@ -191,9 +198,7 @@ void fatalError(string errorString) {
 //Destructor?? I don't know what this is...
 MainGame::~MainGame()
 {
-    //delete []nodeList;
-    //delete []closedNodeList;
-    //delete []addedNodes;
+
 }
 
 
@@ -228,9 +233,9 @@ void MainGame::run(int sx, int sy, int ex, int ey, int mD) {
     SDL_Quit();
 
     for(int i = 0; i<numNodes; i++) delete nodeList[i];
-    delete []nodeList;
-    delete []closedNodeList;
-    delete []addedNodes;
+    //delete []nodeList;
+    //delete []closedNodeList;
+    //delete []addedNodes;
 	//cout<<"GameState = EXIT"<<endl;
 }
 
@@ -567,7 +572,7 @@ void MainGame::fillROSNodeArray(){
         curN.y = nodeList[i]->getyPos();
         curN.connectionCounter = nodeList[i]->getConnectionCounter();
 
-        int * cnA = nodeList[i]->getConnectionArray();
+        vector<int> cnA = nodeList[i]->getConnectionArray();
 
         for(int j = 0; j<numNodes; j++){
             curN.connections.push_back(cnA[j]);
