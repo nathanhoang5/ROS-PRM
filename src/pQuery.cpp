@@ -24,11 +24,12 @@ int endX = 400;
 int endY = 130;
 
 //Screen height and screen width
-const int sh = 300;
-const int sw = 500;
+int sh;
+int sw;
 
 //Binary Occupancy map
 vector<vector<int>> occupancyGrid;
+nav_msgs::OccupancyGrid og;
 
 //Size of node rectangles
 const int nodeSize = 3;
@@ -43,7 +44,7 @@ bool selectPts = true;
 const int numObs = 3;
 
 //Max distance allowed between nodes
-const int maxNodeDist = 5000;
+int maxNodeDist = 5000;
 
 //Stores path from start to finish
 string pathList;
@@ -197,13 +198,16 @@ vector<node*> nodeList;
 //node* nodeList[numNodes];
 
 //Initialize window parameters
-pQuery::pQuery(int nN)
+pQuery::pQuery(int nN, int md, nav_msgs::OccupancyGrid ob)
 {
 
     numNodes = nN;
-
+    maxNodeDist = md;
+    og = ob;
 	_window = nullptr;
 	_renderer = nullptr;
+	sw = ob.info.width;
+	sh = ob.info.height;
 	_screenWidth = sw;
 	_screenHeight = sh;
 	_gameState = GameState::PLAY;
@@ -238,11 +242,11 @@ pQuery::~pQuery()
 void pQuery::run() {
 
     initSystems();
+    parseOGrid();
     createObstacle();
     createObstacle();
     SDL_RenderPresent(_renderer);
     SDL_RenderPresent(_renderer);
-
 
 
 
@@ -453,18 +457,14 @@ void pQuery::createObstacle() {
     SDL_SetRenderDrawColor(_renderer, 75, 0, 130, 255);
     for(int i = 0; i<sw; i++){
         for(int j = 0; j<sh; j++){
-            if(i<350&&i>150&&j<200&&j>100){
-                occupancyGrid[i][j]=true;
-            }
+            if(occupancyGrid[i][j])SDL_RenderDrawPoint(_renderer,i,j);
+
+
+
         }
     }
-    for(int i = 0; i<sw; i++){
-        for(int j = 0; j<sh; j++){
-            if(i<350&&i>150&&j<200&&j>100){
-                if(occupancyGrid[i][j])SDL_RenderDrawPoint(_renderer,i,j);
-            }
-        }
-    }
+
+
 }
 
 //Re-draw start and finish rectangles for clarity
@@ -789,4 +789,15 @@ void pQuery::drawNodes(){
 
      }
      SDL_RenderPresent(_renderer);
+}
+
+void pQuery::parseOGrid(){
+    int oCounter = 0;
+    for(int j = 0; j<sh; j++){
+        for(int i = 0; i<sw; i++){
+            occupancyGrid[i][j] = og.data[oCounter];
+            oCounter++;
+
+        }
+    }
 }

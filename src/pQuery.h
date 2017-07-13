@@ -9,7 +9,7 @@ enum class GameState{PLAY,EXIT};
 class pQuery
 {
 public:
-	pQuery(int nN);
+	pQuery(int nN, int md, nav_msgs::OccupancyGrid ob);
 	~pQuery();
     int tester;
     int sx;
@@ -43,6 +43,7 @@ private:
 	void clearRenderer();
 	void populateTestMap();
 	void drawNodes();
+	void parseOGrid();
 
 	SDL_Window* _window;
 	SDL_Renderer* _renderer;

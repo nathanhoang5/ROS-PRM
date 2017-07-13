@@ -26,6 +26,7 @@ int main(int argc, char **argv)
   srv.request.maxDistance = 50;
 
   srvQ.request.numNodes = srv.request.numNodes;
+  srvQ.request.maxDistance = srv.request.maxDistance;
   srvQ.request.startX = 20;
   srvQ.request.startY = 270;
   srvQ.request.endX = 460;
@@ -37,13 +38,22 @@ int main(int argc, char **argv)
   obs.info.width = sw;
   obs.info.height = sh;
   int occupancyGrid[sw][sh];
+  //Create Obstacle: x1, x2, y1, y2
   for(int i = 0; i<sw; i++){
         for(int j = 0; j<sh; j++){
-            if(i<350&&i>150&&j<200&&j>100){
+            if(i<170&&i>110&&j<250&&j>0){
                 occupancyGrid[i][j]=1;
             }
             else{
                 occupancyGrid[i][j]=0;
+            }
+        }
+  }
+
+  for(int i = 0; i<sw; i++){
+        for(int j = 0; j<sh; j++){
+            if(i<380&&i>350&&j<300&&j>50){
+                occupancyGrid[i][j]=1;
             }
         }
   }

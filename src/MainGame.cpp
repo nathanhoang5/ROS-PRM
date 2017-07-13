@@ -23,8 +23,8 @@ int endX;
 int endY;
 
 //Screen height and screen width
-int sw = 500;
-int sh = 300;
+int sw;
+int sh;
 
 //Binary Occupancy map
 //int occupancyGrid[sw][sh];
@@ -207,7 +207,7 @@ void MainGame::run(int sx, int sy, int ex, int ey, int mD) {
 
 	//maxDist
 	initSystems();
-
+    parseOGrid();
     createObstacle();
     createObstacle();
     SDL_RenderPresent(_renderer);
@@ -419,16 +419,9 @@ void MainGame::createObstacle() {
     SDL_SetRenderDrawColor(_renderer, 75, 0, 130, 255);
     for(int i = 0; i<sw; i++){
         for(int j = 0; j<sh; j++){
-            if(i<350&&i>150&&j<200&&j>100){
-                occupancyGrid[i][j]=true;
-            }
-        }
-    }
-    for(int i = 0; i<sw; i++){
-        for(int j = 0; j<sh; j++){
-            if(i<350&&i>150&&j<200&&j>100){
-                if(occupancyGrid[i][j])SDL_RenderDrawPoint(_renderer,i,j);
-            }
+
+            if(occupancyGrid[i][j])SDL_RenderDrawPoint(_renderer,i,j);
+
         }
     }
 }
@@ -581,4 +574,15 @@ void MainGame::fillROSNodeArray(){
         n.nodeLst.push_back(curN);
     }
     //cout<<numNodes<<n.nodeLst.size()<<endl;
+}
+
+void MainGame::parseOGrid(){
+    int oCounter = 0;
+    for(int j = 0; j<sh; j++){
+        for(int i = 0; i<sw; i++){
+            occupancyGrid[i][j] = og.data[oCounter];
+            oCounter++;
+
+        }
+    }
 }
