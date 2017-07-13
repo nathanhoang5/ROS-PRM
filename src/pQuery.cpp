@@ -79,7 +79,7 @@ class node
 	//Value of node in node array
 	int arrayValue;
 	//List of node connections
-	int * connections;
+	int * connections = new int [numNodes];
 	//Counter for index of added nodes array
 	int connectionCounter = 0;
 
@@ -97,6 +97,7 @@ public:
 	int getArrayValue() const { return arrayValue; }
 	int getConnection(int n) {	return connections[n];	}
 	int* getConnectionArray(){  return connections; }
+	int getConnectionCounter(){  return connectionCounter;  }
 
     void setXY(int x, int y){
         xPos = x;
@@ -127,7 +128,7 @@ public:
 
 	//Initializes all values of connection array
 	void initCArray() {
-        connections = new int [numNodes];
+
 		for (int i = 0; i < numNodes; i++) {
 			connections[i] = -1;
 		}
@@ -137,21 +138,46 @@ public:
 
 	//Adds connection to a neighboring node
 	void addConnection(int c) {
-		connections[connectionCounter] = c;
-		connectionCounter = connectionCounter + 1;
+
+	    if(connectionCounter<numNodes){
+            connections[connectionCounter] = c;
+            connectionCounter = connectionCounter + 1;
+	    }
+	    else{
+            cout<<"out of bounds"<<endl;
+            for(int i = 0; i<numNodes; i++){
+                if(connections[i]==-2){
+                    connections[i] = c;
+                    cout<<"Found a spot"<<endl;
+                    break;
+                }
+
+            }
+	    }
+	    if(c==-1)connectionCounter = connectionCounter-1;
+
 	}
 
 	void resetConnection(int c){
-        connections[c]=-2;
+        //connections[c]=-2;
+        for(int i = 0; i<2; i++){
+            if(connections[i]==c){
+                connections[i] = -2;
+            }
+        }
 	}
+
+    void resetCounter(){
+        connectionCounter = 0;
+    }
 
 	//Prints all connections
 	void printConnections() {
 		for (int i = 0; i < numNodes; i++) {
-			if (connections[i] == -1) break;
-			else {
-				cout << connections[i];
-			}
+			//if (connections[i] == -1) break;
+			//else
+				cout << connections[i]<<endl;
+			//
 		}
 	}
 
@@ -211,21 +237,24 @@ pQuery::~pQuery()
 
 //Called from main class, starts application depending on if selectPoints==true, then starts gameLoop()
 void pQuery::run() {
-	initSystems();
 
+    initSystems();
     createObstacle();
     createObstacle();
     SDL_RenderPresent(_renderer);
     SDL_RenderPresent(_renderer);
+
 
 
 
     cout << "Press space to query" << endl;
 
 
-
+    fillLocalNodeArray();
+    redrawSF();
+    redrawSF();
 	gameLoop();
-
+    createObstacle();
 	SDL_SetRenderDrawColor(_renderer, 0, 0, 0, 255);
 	SDL_RenderClear(_renderer);
     SDL_DestroyWindow(_window);
@@ -265,9 +294,10 @@ void pQuery::initSystems() {
 	selectPts = false;
     stillRunning = true;
 
-    fillLocalNodeArray();
-    redrawSF();
-    redrawSF();
+
+
+    //drawNodes();
+
 
 }
 
@@ -282,7 +312,7 @@ void pQuery::fillLocalNodeArray(){
 	    nodeList[aPos] = new node(g.x, g.y, 0, 10000, g.id);
 	    nodeList[aPos]->initCArray();
 	    //nodeList[aPos]->setConnectionCounter(g.connectionCounter);
-	    //std::cout<<g.connectionCounter<<std::endl;
+
 
 	    for(std::vector<int>::const_iterator bit = g.connections.begin(); bit != g.connections.end(); ++bit)
         {
@@ -292,10 +322,10 @@ void pQuery::fillLocalNodeArray(){
             nodeList[aPos]->addConnection(cn);
 
         }
-
+        //std::cout<<"Node "<<nodeList[aPos]->getArrayValue()<<" cc: "<<nodeList[aPos]->getConnectionCounter()<<std::endl;
         aPos = aPos+1;
     }
-    //setStartEnd();
+    setStartEnd();
     nodeList[0]->setParent(-5);
 }
 
@@ -304,20 +334,50 @@ void pQuery::setStartEnd(){
     startY = sy;
     endX = ex;
     endY = ey;
+    bool reconnectStart = false;
+    bool reconnectFin = false;
 
-    if (nodeList[0]->getxPos()!=sx&&nodeList[0]->getyPos()!=sy){
+    if (nodeList[0]->getxPos()!=sx||nodeList[0]->getyPos()!=sy){
         nodeList[0]->setXY(sx,sy);
-        resetConnection(0);
-        connect(0);
+        for(int i = 0;i<numNodes;i++){
+            nodeList[i]->resetConnection(0);
+        }
+        nodeList[0]->initCArray();
+        nodeList[0]->resetCounter();
+        //cout<<"Reset connections successful"<<endl;
+        //nodeList[0]->addConnection(13);
+        //nodeList[13]->addConnection(0);
+        reconnectStart = true;
     }
 
 
-    if (nodeList[1]->getxPos()!=sx&&nodeList[1]->getyPos()!=sy){
+    if (nodeList[1]->getxPos()!=sx||nodeList[1]->getyPos()!=sy){
         nodeList[1]->setXY(ex,ey);
-        resetConnection(1);
+        //resetConnection(1);
+        for(int i = 0;i<numNodes;i++){
+            nodeList[i]->resetConnection(1);
+        }
+        nodeList[1]->initCArray();
+        nodeList[1]->resetCounter();
+        //cout<<"Reset connections successful"<<endl;
+        reconnectFin = true;
+    }
+    if(reconnectStart){
+        //cout<<"connecting 0"<<endl;
+        connect(0);
+
+
+    }
+    if(reconnectFin){
         connect(1);
+        //cout<<"connecting 1"<<endl;
     }
 
+    //cout<<"Connect successful"<<endl;
+    /*for(int i = 0;i<numNodes;i++){
+        cout<<"Node "<<nodeList[i]->getArrayValue()<<":  x="<<nodeList[i]->getxPos()<<", y="<<nodeList[i]->getyPos()<<endl;
+        nodeList[i]->printConnections();
+    }*/
 
 
 
@@ -335,6 +395,7 @@ void pQuery::resetConnection(int nodeNumber){
 //If there is no error, continue to process input
 void pQuery::gameLoop() {
 	while (_gameState != GameState::EXIT) {
+
 		processInput();
 		//drawGame();
 	}
@@ -368,6 +429,7 @@ void pQuery::processInput() {
 
                         if (counter == 0) {
 							i4 = clock();
+
 							query();
 							endClock = clock();
 							//Adds time taken for each section and print
@@ -428,7 +490,7 @@ void pQuery::redrawSF() {
 	finRect.y = nodeList[1]->getyPos() - nodeSize / 2;
 	SDL_SetRenderDrawColor(_renderer, 255, 0, 0, 255);
 	SDL_RenderFillRect(_renderer, &finRect);
-
+    //cout<<"Drew finish rectangle at y of: "<<finRect.y;
 	SDL_RenderPresent(_renderer);
 }
 
@@ -465,7 +527,7 @@ void pQuery::connect(int a) {
     for (int j = 0; j < numNodes; j++){
         //t1 = clock();
         //Don't connect a node to itself
-        if (i == j) {}
+        if (i == j) {  }
         //Two different nodes:
         else {
             int dX = nodeList[i]->getxPos() - nodeList[j]->getxPos();
@@ -474,9 +536,13 @@ void pQuery::connect(int a) {
 
             if (static_cast<int>(sqrt(dX*dX + dY*dY)) < maxNodeDist){
                 if(Line(nodeList[i]->getxPos(), nodeList[i]->getyPos(), nodeList[j]->getxPos(), nodeList[j]->getyPos())){
+
                     nodeList[i]->addConnection(j);
                     nodeList[j]->addConnection(i);
-                    SDL_RenderDrawLine(_renderer, nodeList[i]->getxPos(), nodeList[i]->getyPos(), nodeList[j]->getxPos(), nodeList[j]->getyPos());
+                    //SDL_RenderDrawLine(_renderer, nodeList[i]->getxPos(), nodeList[i]->getyPos(), nodeList[j]->getxPos(), nodeList[j]->getyPos());
+
+
+
                 }
             }
         }
@@ -484,17 +550,13 @@ void pQuery::connect(int a) {
             //timeTaken = timeTaken +(t2-t1)/(double) CLOCKS_PER_SEC*1000;
     }
 
-
-	SDL_RenderPresent(_renderer);
-	cout << "Connected Nodes!" << endl;
+    //SDL_RenderPresent(_renderer);
 
 
 
-	//Re-draw obstacles and start/finish
-	createObstacle();
-	createObstacle();
-	redrawSF();
-	redrawSF();
+
+
+
 
 }
 
@@ -552,6 +614,8 @@ bool pQuery::Line(  float x1, float y1,  float x2,  float y2)
   }
 
   return true;
+
+
 }
 
 //Priority queue to store open (activated) nodes
@@ -579,7 +643,7 @@ void pQuery::query() {
 				//One of current node's connections, will be -1 if node has no more connections
 				int cxn = nodeList[i]->getConnection(j);
 				//Do nothing if the connection is its parent
-				if (nodeList[i]->getParent() == cxn) {
+				if (nodeList[i]->getParent() == cxn || cxn == -2) {
 				}
 				//If the connection is the finish, break out of loop and display path
 				else if (cxn == 1) {
@@ -715,4 +779,17 @@ void pQuery::clearQueueList() {
 	for (int i = 0; i < numNodes; i++) {
 		addedNodes[i] = -1;
 	}
+}
+
+void pQuery::drawNodes(){
+     for(int i = 0; i<numNodes; i++){
+        SDL_Rect nodeRect;
+        nodeRect.h = nodeSize;
+        nodeRect.w = nodeSize;
+        nodeRect.x = nodeList[i]->getxPos()-nodeSize/2;
+        nodeRect.y = nodeList[i]->getyPos()-nodeSize/2;
+        SDL_RenderFillRect(_renderer, &nodeRect);
+
+     }
+     SDL_RenderPresent(_renderer);
 }

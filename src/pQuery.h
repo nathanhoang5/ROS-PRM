@@ -41,6 +41,7 @@ private:
 	void redrawFin();
 	void clearRenderer();
 	void populateTestMap();
+	void drawNodes();
 
 	SDL_Window* _window;
 	SDL_Renderer* _renderer;

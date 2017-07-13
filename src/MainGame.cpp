@@ -338,7 +338,9 @@ void MainGame::processInput() {
 							//cout << "Press space to find path (A*)" << endl;
                             cout << "----------------------"<<endl;
 							counter = 0;
-
+                            /*for(int i = 0;i<numNodes;i++){
+                                cout<<"Node "<<nodeList[i]->getArrayValue()<<":  x="<<nodeList[i]->getxPos()<<", y="<<nodeList[i]->getyPos()<<endl;
+                            }*/
 							stillRunning = false;
 							//cout << "Collision check time: " << timeTaken << endl;
 						}
