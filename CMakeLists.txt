@@ -83,3 +83,7 @@ add_dependencies(add_two_ints_client beginner_tutorials_gencpp)
 add_executable(prmClient src/prmClient.cpp)
 target_link_libraries(prmClient ${catkin_LIBRARIES})
 add_dependencies(prmClient beginner_tutorials_gencpp)
+
+add_executable(AirSimPRM src/AirSimPRM.cpp)
+target_link_libraries(AirSimPRM ${catkin_LIBRARIES})
+add_dependencies(AirSimPRM beginner_tutorials_gencpp)

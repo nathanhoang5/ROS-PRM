@@ -12,7 +12,7 @@ public:
 	MainGame(int nN, nav_msgs::OccupancyGrid ob);
 	~MainGame();
     int nNodes;
-	void run(int sx, int sy, int ex, int ey, int mD);
+	void run(float sx, float sy, int ex, int ey, int mD);
     beginner_tutorials::nodeArray n;
 
 

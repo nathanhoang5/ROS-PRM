@@ -203,7 +203,7 @@ MainGame::~MainGame()
 
 
 //Called from main class, starts application depending on if selectPoints==true, then starts gameLoop()
-void MainGame::run(int sx, int sy, int ex, int ey, int mD) {
+void MainGame::run(float sx, float sy, int ex, int ey, int mD) {
 
 	//maxDist
 	initSystems();
@@ -217,8 +217,23 @@ void MainGame::run(int sx, int sy, int ex, int ey, int mD) {
 
     cout << "Press space to populate" << endl;
 
-    startX = sx;
-    startY = sy;
+    float TLCornerXWFx = og.info.origin.position.x;
+    cout<<TLCornerXWFx<<endl;
+    float TLCornerXWFy = og.info.origin.position.y + og.info.height*og.info.resolution;
+    float quadXWFx = sx;
+    cout<<sx<<endl;
+    float quadXWFy = sy;
+
+    float quadXWindowx = (quadXWFx-TLCornerXWFx);
+    cout<<quadXWindowx<<endl;
+    float quadXWindowy = (quadXWFy-TLCornerXWFy)*-1/og.info.resolution;
+
+
+    startX = quadXWindowx/og.info.resolution;
+    startY = quadXWindowy;
+    cout<<startX<<endl;
+    cout<<startY<<endl;
+
     endX = ex;
     endY = ey;
     maxNodeDist = mD;
@@ -578,11 +593,17 @@ void MainGame::fillROSNodeArray(){
 
 void MainGame::parseOGrid(){
     int oCounter = 0;
-    for(int j = 0; j<sh; j++){
-        for(int i = 0; i<sw; i++){
+    //reverse(og.data.begin(),og.data.end());
+//for(int j = 0; j<sh; j++){
+
+    //for(int i = sw-1; i>=0; i--){
+        for(int j = sh-1; j>=0; j--){
+
+                for(int i = 0; i<sw; i++){
+
+
             occupancyGrid[i][j] = og.data[oCounter];
             oCounter++;
-
         }
     }
 }

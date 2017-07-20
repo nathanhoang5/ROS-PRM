@@ -810,9 +810,9 @@ void pQuery::drawNodes(){
 
 void pQuery::parseOGrid(){
     int oCounter = 0;
-    for(int j = 0; j<sh; j++){
-        for(int i = 0; i<sw; i++){
-            occupancyGrid[i][j] = og.data[oCounter];
+    for(int j = 0; j<sw; j++){
+        for(int i = 0; i<sh; i++){
+            occupancyGrid[j][i] = og.data[oCounter];
             oCounter++;
 
         }

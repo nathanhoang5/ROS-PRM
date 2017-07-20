@@ -5,7 +5,12 @@
 #include <beginner_tutorials/nodeArray.h>
 #include <nav_msgs/OccupancyGrid.h>
 #include <cstdlib>
+/*
+void prmCallback(const nav_msgs::OccupancyGrid& o){
 
+
+}
+*/
 int main(int argc, char **argv)
 {
   ros::init(argc, argv, "PRM_Client");
@@ -14,8 +19,7 @@ int main(int argc, char **argv)
   ros::ServiceClient client = n.serviceClient<beginner_tutorials::PRM>("PRM");
   beginner_tutorials::PRM srv;
 
-  ros::NodeHandle nh;
-  ros::ServiceClient clientQ = nh.serviceClient<beginner_tutorials::PRMQuery>("PRMQuery");
+  ros::ServiceClient clientQ = n.serviceClient<beginner_tutorials::PRMQuery>("PRMQuery");
   beginner_tutorials::PRMQuery srvQ;
   //srv.request.a = 0;
   srv.request.startX = 20;
@@ -78,7 +82,7 @@ int main(int argc, char **argv)
     }
     */
     srvQ.request.nA = srv.response.nA;
-    std::cout<<"Populate and connect called successfully!"<<std::endl;
+    //std::cout<<"Populate and connect called successfully!"<<std::endl;
 
   }
   else
@@ -97,7 +101,7 @@ int main(int argc, char **argv)
 	    g = *it;
 	    std::cout<<"Node: "<<g.id<<" xPos: "<<g.x<<" yPos: "<<g.y<<std::endl;
     }
-    std::cout<<"Query called successfully!"<<std::endl;
+    //std::cout<<"Query called successfully!"<<std::endl;
   }
 
   else
