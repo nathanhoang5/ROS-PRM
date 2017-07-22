@@ -1,0 +1,9 @@
+#goal
+nodeArray target
+---
+#result
+geometry_msgs/Pose finalPosition
+---
+#feedback
+node currentTarget
+geometry_msgs/Pose currentPosition

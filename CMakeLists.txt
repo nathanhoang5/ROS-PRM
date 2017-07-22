@@ -7,7 +7,11 @@ find_package(catkin REQUIRED COMPONENTS
   std_msgs
   nav_msgs
   message_generation
+  actionlib
+  actionlib_msgs
 )
+
+find_package(Boost REQUIRED COMPONENTS system)
 
 add_message_files(
   FILES
@@ -23,16 +27,21 @@ add_message_files(
    PRMQuery.srv
  )
 
+add_action_files(
+  DIRECTORY action
+  FILES moveQuad.action
+)
 
 
 generate_messages(
    DEPENDENCIES
    std_msgs
    nav_msgs
- )
+   actionlib_msgs
+)
 
 catkin_package(
-CATKIN_DEPENDS message_runtime nav_msgs std_msgs
+CATKIN_DEPENDS message_runtime nav_msgs std_msgs actionlib_msgs
 )
 
 set(CMAKE_CXX_FLAGS "-std=c++11 ${CMAKE_CXX_FLAGS}")
@@ -40,6 +49,7 @@ set(CMAKE_CXX_FLAGS "-std=c++11 ${CMAKE_CXX_FLAGS}")
 include_directories(
   include
   ${catkin_INCLUDE_DIRS}
+  ${Boost_INCLUDE_DIRS}
   /usr/local/include/SDL2
   /home/nathan/catkin_ws/src/beginner_tutorials/src
 )
@@ -51,7 +61,8 @@ link_directories(
 
 add_library(MainGame src/MainGame.cpp)
 add_library(pQuery src/pQuery.cpp)
-
+add_dependencies(pQuery beginner_tutorials_generate_messages_cpp)
+add_dependencies(MainGame beginner_tutorials_generate_messages_cpp)
 add_executable(talker src/talker.cpp)
 target_link_libraries(talker ${catkin_LIBRARIES})
 add_dependencies(talker beginner_tutorials_generate_messages_cpp)
@@ -66,7 +77,7 @@ add_dependencies(main beginner_tutorials_generate_messages_cpp)
 
 add_executable(pQueryRun src/pQueryRun.cpp)
 target_link_libraries(pQueryRun ${catkin_LIBRARIES} pQuery SDL2)
-add_dependencies(main beginner_tutorials_generate_messages_cpp)
+add_dependencies(pQueryRun beginner_tutorials_generate_messages_cpp)
 
 add_executable(listener src/listener.cpp)
 target_link_libraries(listener ${catkin_LIBRARIES})
@@ -87,3 +98,7 @@ add_dependencies(prmClient beginner_tutorials_gencpp)
 add_executable(AirSimPRM src/AirSimPRM.cpp)
 target_link_libraries(AirSimPRM ${catkin_LIBRARIES})
 add_dependencies(AirSimPRM beginner_tutorials_gencpp)
+
+add_executable(moveQuad src/moveQuad.cpp)
+target_link_libraries(moveQuad ${catkin_LIBRARIES})
+add_dependencies(moveQuad beginner_tutorials_gencpp)
