@@ -1,7 +1,8 @@
 #include <ros/ros.h>
 #include <actionlib/server/simple_action_server.h>
 #include <beginner_tutorials/moveQuadAction.h>
-#include <beginner_tutorials/node.h>
+#include <px4_control/PVA.h>
+#include <px4_control/PVAarray.h>
 
 class moveQuadAction
 {
@@ -17,6 +18,7 @@ public:
 
     //subscribe to the data topic of interest
     sub_ = nh_.subscribe("/Airsim/quadPos", 1, &moveQuadAction::positionCB, this);
+    PVAControl = nh_.advertise<px4_control::PVA>("/px4_control/PVA_Ref", 10);
     as_.start();
   }
 
@@ -26,10 +28,12 @@ public:
 
   void goalCB()
   {
-    // reset helper variables
 
-    // accept the new goal
     targetNodes = as_.acceptNewGoal()->target;
+    px4_control::PVA PVAmsg = targetNodes.data.front();
+    PVAControl.publish(PVAmsg);
+    targetNodes.data.erase(targetNodes.data.begin());
+
   }
 
   void preemptCB()
@@ -56,9 +60,23 @@ public:
     */
     feedback_.currentPosition = curPos;
     as_.publishFeedback(feedback_);
-    if(curPos.position.x == 0){
-        result_.finalPosition.position.x = curPos.position.x;
-        as_.setSucceeded(result_);
+    if(curPos.position.x > curTarget.Pos.x-maxDev && curPos.position.x < curTarget.Pos.x+maxDev &&
+       curPos.position.y > curTarget.Pos.y-maxDev && curPos.position.y < curTarget.Pos.y+maxDev &&
+       curPos.position.z > curTarget.Pos.z-maxDev && curPos.position.z < curTarget.Pos.z+maxDev){
+
+       if(targetNodes.data.size()==0){
+            result_.finalPosition.position.x = curPos.position.x;
+            result_.finalPosition.position.y = curPos.position.y;
+            result_.finalPosition.position.z = curPos.position.z;
+            as_.setSucceeded(result_);
+
+       }
+       else{
+           px4_control::PVA PVAmsg = targetNodes.data.front();
+           PVAControl.publish(PVAmsg);
+           targetNodes.data.erase(targetNodes.data.begin());
+       }
+
     }
     /*
     if(data_count_ > goal_)
@@ -87,10 +105,13 @@ protected:
   ros::NodeHandle nh_;
   actionlib::SimpleActionServer<beginner_tutorials::moveQuadAction> as_;
   std::string action_name_;
-  beginner_tutorials::nodeArray targetNodes;
+  px4_control::PVAarray targetNodes;
+  px4_control::PVA curTarget;
   beginner_tutorials::moveQuadFeedback feedback_;
   beginner_tutorials::moveQuadResult result_;
   ros::Subscriber sub_;
+  ros::Publisher PVAControl;
+  float maxDev = .2;
 };
 
 int main(int argc, char** argv)

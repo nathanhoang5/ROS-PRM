@@ -1,9 +1,9 @@
 #goal
-nodeArray target
+px4_control/PVAarray target
 ---
 #result
 geometry_msgs/Pose finalPosition
 ---
 #feedback
-node currentTarget
+px4_control/PVA currentTarget
 geometry_msgs/Pose currentPosition

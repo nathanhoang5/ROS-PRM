@@ -6,6 +6,7 @@ find_package(catkin REQUIRED COMPONENTS
   rospy
   std_msgs
   nav_msgs
+  px4_control
   message_generation
   actionlib
   actionlib_msgs
@@ -35,6 +36,7 @@ add_action_files(
 
 generate_messages(
    DEPENDENCIES
+   px4_control
    std_msgs
    nav_msgs
    actionlib_msgs

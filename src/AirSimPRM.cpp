@@ -4,74 +4,109 @@
 #include <beginner_tutorials/node.h>
 #include <beginner_tutorials/nodeArray.h>
 #include <nav_msgs/OccupancyGrid.h>
+#include <px4_control/PVA.h>
+#include <px4_control/PVAarray.h>
+#include <actionlib/client/simple_action_client.h>
+#include <actionlib/client/terminal_state.h>
+#include <beginner_tutorials/moveQuadAction.h>
 #include <cstdlib>
-
 
 float x = -3;
 float y = -3;
+float z = 5.5;
 
-void prmCallback(const nav_msgs::OccupancyGrid& o){
-  if(x!=-3&&y!=-3){
+void prmCallback(const nav_msgs::OccupancyGrid& o)
+{
+    if(x!=-3&&y!=-3)
+    {
+        ros::NodeHandle nh;
 
-      ros::NodeHandle nh;
+        ros::ServiceClient client = nh.serviceClient<beginner_tutorials::PRM>("PRM");
+        beginner_tutorials::PRM srv;
 
-      ros::ServiceClient client = nh.serviceClient<beginner_tutorials::PRM>("PRM");
-      beginner_tutorials::PRM srv;
+        ros::ServiceClient clientQ = nh.serviceClient<beginner_tutorials::PRMQuery>("PRMQuery");
+        beginner_tutorials::PRMQuery srvQ;
 
-      ros::ServiceClient clientQ = nh.serviceClient<beginner_tutorials::PRMQuery>("PRMQuery");
-      beginner_tutorials::PRMQuery srvQ;
+        srv.request.startX = x;
+        srv.request.startY = y;
+        srv.request.endX = 460;
+        srv.request.endY = 270;
+        srv.request.numNodes = 500;
+        srv.request.maxDistance = 50;
 
-      srv.request.startX = x;
-      srv.request.startY = y;
-      srv.request.endX = 460;
-      srv.request.endY = 270;
-      srv.request.numNodes = 500;
-      srv.request.maxDistance = 50;
+        srvQ.request.startX = 20;
+        srvQ.request.startY = 20;
+        srvQ.request.endX = 460;
+        srvQ.request.endY = 270;
+        srvQ.request.numNodes = srv.request.numNodes;
+        srvQ.request.maxDistance = srv.request.maxDistance;
 
-      srvQ.request.startX = 20;
-      srvQ.request.startY = 20;
-      srvQ.request.endX = 460;
-      srvQ.request.endY = 270;
-      srvQ.request.numNodes = srv.request.numNodes;
-      srvQ.request.maxDistance = srv.request.maxDistance;
+        srv.request.o = o;
+        srvQ.request.o = o;
 
-      srv.request.o = o;
-      srvQ.request.o = o;
-
-      if (client.call(srv))
-      {
-        srvQ.request.nA = srv.response.nA;
-      }
-
-      else
-      {
-        ROS_ERROR("Failed to call service PRM");
-
-      }
-
-
-
-      if(clientQ.call(srvQ)){
-        std::cout<<"Path:"<<std::endl;
-        for(std::vector<beginner_tutorials::node>::const_iterator it = srvQ.response.nFinal.nodeLst.begin(); it != srvQ.response.nFinal.nodeLst.end(); ++it)
+        if (client.call(srv))
         {
-            beginner_tutorials::node g;
-            g = *it;
-            std::cout<<"Node: "<<g.id<<" xPos: "<<g.x<<" yPos: "<<g.y<<std::endl;
+            srvQ.request.nA = srv.response.nA;
         }
-        //std::cout<<"Query called successfully!"<<std::endl;
-      }
 
-      else
-      {
-        ROS_ERROR("Failed to call service QUERY");
+        else
+        {
+            ROS_ERROR("Failed to call service PRM");
 
-      }
-  }
+        }
 
+
+
+        if(clientQ.call(srvQ))
+        {
+            px4_control::PVAarray targetArray;
+            std::cout<<"Path:"<<std::endl;
+            for(std::vector<beginner_tutorials::node>::const_iterator it = srvQ.response.nFinal.nodeLst.begin(); it != srvQ.response.nFinal.nodeLst.end(); ++it)
+            {
+                beginner_tutorials::node g;
+                g = *it;
+                px4_control::PVA curTarget;
+                curTarget.Pos.x = g.x;
+                curTarget.Pos.y = g.y;
+                curTarget.Pos.z = z;
+                targetArray.data.push_back(curTarget);
+                std::cout<<"Node: "<<g.id<<" xPos: "<<g.x<<" yPos: "<<g.y<<std::endl;
+            }
+            actionlib::SimpleActionClient<beginner_tutorials::moveQuadAction> ac("movingQuad", true);
+
+            ROS_INFO("Waiting for action server to start.");
+            // wait for the action server to start
+            ac.waitForServer(); //will wait for infinite time
+
+            ROS_INFO("Action server started, sending goal.");
+            // send a goal to the action
+            beginner_tutorials::moveQuadGoal goal;
+            goal.target = targetArray;
+            ac.sendGoal(goal);
+
+            //wait for the action to return
+            bool finished_before_timeout = ac.waitForResult(ros::Duration(300.0));
+
+            if (finished_before_timeout)
+            {
+                actionlib::SimpleClientGoalState state = ac.getState();
+                ROS_INFO("Action finished: %s",state.toString().c_str());
+            }
+            else
+                ROS_INFO("Action did not finish before the time out.");
+            //std::cout<<"Query called successfully!"<<std::endl;
+        }
+
+        else
+        {
+            ROS_ERROR("Failed to call service QUERY");
+
+        }
+    }
 }
 
-void quadPosSetter(const geometry_msgs::Pose& p){
+void quadPosSetter(const geometry_msgs::Pose& p)
+{
     x = p.position.x;
     y = p.position.y;
 }
@@ -79,13 +114,13 @@ void quadPosSetter(const geometry_msgs::Pose& p){
 
 int main(int argc, char **argv)
 {
-  ros::init(argc, argv, "PRM_Client");
+    ros::init(argc, argv, "PRM_Client");
 
-  ros::NodeHandle n;
+    ros::NodeHandle n;
 
-  ros::Subscriber sub = n.subscribe("projected_map", 1000, prmCallback);
-  ros::Subscriber quadPosSub = n.subscribe("Airsim/quadPos",100, quadPosSetter);
+    ros::Subscriber sub = n.subscribe("projected_map", 1000, prmCallback);
+    ros::Subscriber quadPosSub = n.subscribe("Airsim/quadPos",100, quadPosSetter);
 
-  ros::spin();
-  return 0;
+    ros::spin();
+    return 0;
 }
