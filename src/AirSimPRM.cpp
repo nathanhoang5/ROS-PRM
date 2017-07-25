@@ -13,7 +13,7 @@
 
 float x = -3;
 float y = -3;
-float z = 5.5;
+float z = 5;
 
 void prmCallback(const nav_msgs::OccupancyGrid& o)
 {
@@ -29,15 +29,15 @@ void prmCallback(const nav_msgs::OccupancyGrid& o)
 
         srv.request.startX = x;
         srv.request.startY = y;
-        srv.request.endX = 460;
-        srv.request.endY = 270;
+        srv.request.endX = 0;
+        srv.request.endY = 0;
         srv.request.numNodes = 500;
         srv.request.maxDistance = 50;
 
         srvQ.request.startX = 20;
         srvQ.request.startY = 20;
-        srvQ.request.endX = 460;
-        srvQ.request.endY = 270;
+        srvQ.request.endX = 0;
+        srvQ.request.endY = 0;
         srvQ.request.numNodes = srv.request.numNodes;
         srvQ.request.maxDistance = srv.request.maxDistance;
 

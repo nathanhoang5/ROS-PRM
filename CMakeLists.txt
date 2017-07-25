@@ -73,6 +73,10 @@ add_executable(HelloWorld src/HelloWorld.cpp)
 target_link_libraries(HelloWorld ${catkin_LIBRARIES})
 add_dependencies(HelloWorld beginner_tutorials_generate_messages_cpp)
 
+add_executable(pubPVA src/pubPVA.cpp)
+target_link_libraries(pubPVA ${catkin_LIBRARIES})
+add_dependencies(pubPVA beginner_tutorials_gencpp)
+
 add_executable(main src/main.cpp)
 target_link_libraries(main ${catkin_LIBRARIES} MainGame SDL2)
 add_dependencies(main beginner_tutorials_generate_messages_cpp)

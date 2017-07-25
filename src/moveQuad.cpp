@@ -61,8 +61,7 @@ public:
     feedback_.currentPosition = curPos;
     as_.publishFeedback(feedback_);
     if(curPos.position.x > curTarget.Pos.x-maxDev && curPos.position.x < curTarget.Pos.x+maxDev &&
-       curPos.position.y > curTarget.Pos.y-maxDev && curPos.position.y < curTarget.Pos.y+maxDev &&
-       curPos.position.z > curTarget.Pos.z-maxDev && curPos.position.z < curTarget.Pos.z+maxDev){
+       curPos.position.y > curTarget.Pos.y-maxDev && curPos.position.y < curTarget.Pos.y+maxDev ){
 
        if(targetNodes.data.size()==0){
             result_.finalPosition.position.x = curPos.position.x;

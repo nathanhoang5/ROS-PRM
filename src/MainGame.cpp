@@ -39,7 +39,7 @@ const int nodeSize = 3;
 bool stillRunning = true;
 
 //True at start, allows selection of start and end points
-bool selectPts = false;
+bool selectPts = true;
 
 //Number of obstacles
 const int numObs = 3;
@@ -70,93 +70,131 @@ double runTime = 0;
 //Each point stored as a node
 class node
 {
-	//Current position
-	int xPos;
-	int yPos;
-	//Total distance already travelled to reach the node
-	int level = 0;
-	//Priority=distance from start node
-	int priority;  // smaller: higher priority
-	//Parent node
-	int parent;
-	//Value of node in node array
-	int arrayValue;
-	//List of node connections
-	vector<int> connections;
-	//Counter for index of added nodes array
-	int connectionCounter = 0;
+    //Current position
+    int xPos;
+    int yPos;
+    //Total distance already travelled to reach the node
+    int level = 0;
+    //Priority=distance from start node
+    int priority;  // smaller: higher priority
+    //Parent node
+    int parent;
+    //Value of node in node array
+    int arrayValue;
+    //List of node connections
+    vector<int> connections;
+    //Counter for index of added nodes array
+    int connectionCounter = 0;
 
 
 
 public:
-	node(int xp, int yp, int d, int p, int a)
-	{
-		xPos = xp; yPos = yp; level = d; priority = p; arrayValue = a;
-	}
+    node(int xp, int yp, int d, int p, int a)
+    {
+        xPos = xp;
+        yPos = yp;
+        level = d;
+        priority = p;
+        arrayValue = a;
+    }
 
-	int getxPos() const { return xPos; }
-	int getyPos() const { return yPos; }
-	int getLevel() const { return level; }
-	int getPriority() const { return priority; }
-	int getParent() const { return parent; }
-	int getArrayValue() const { return arrayValue; }
-	int getConnection(int n) {	return connections[n];	}
-	int getConnectionCounter(){  return connectionCounter;  }
-	vector<int> getConnectionArray(){  return connections; }
+    int getxPos() const
+    {
+        return xPos;
+    }
+    int getyPos() const
+    {
+        return yPos;
+    }
+    int getLevel() const
+    {
+        return level;
+    }
+    int getPriority() const
+    {
+        return priority;
+    }
+    int getParent() const
+    {
+        return parent;
+    }
+    int getArrayValue() const
+    {
+        return arrayValue;
+    }
+    int getConnection(int n)
+    {
+        return connections[n];
+    }
+    int getConnectionCounter()
+    {
+        return connectionCounter;
+    }
+    vector<int> getConnectionArray()
+    {
+        return connections;
+    }
 
 
-	//Sets movement cost to get to this node, then the priority (for the priority queue)
-	void setPriority(int pD)
-	{
-		level = pD;
-		priority = level+estimate();
-	}
+    //Sets movement cost to get to this node, then the priority (for the priority queue)
+    void setPriority(int pD)
+    {
+        level = pD;
+        priority = level+estimate();
+    }
 
-	// Estimation function for the remaining distance to the goal (can be used in priority for A*)
-	const int & estimate() const
-	{
-		static int xd, yd, d;
-		xd = endX - xPos;
-		yd = endY - yPos;
-		d = static_cast<int>(sqrt(xd*xd + yd*yd));
-		return(d);
-	}
+    // Estimation function for the remaining distance to the goal (can be used in priority for A*)
+    const int & estimate() const
+    {
+        static int xd, yd, d;
+        xd = endX - xPos;
+        yd = endY - yPos;
+        d = static_cast<int>(sqrt(xd*xd + yd*yd));
+        return(d);
+    }
 
-	//Sets the parent of node
-	void setParent(int par) {
-		parent = par;
-	}
+    //Sets the parent of node
+    void setParent(int par)
+    {
+        parent = par;
+    }
 
-	//Initializes all values of connection array
-	void initCArray() {
-		connections.resize(numNodes, -1);
-	}
+    //Initializes all values of connection array
+    void initCArray()
+    {
+        connections.resize(numNodes, -1);
+    }
 
-	//Adds connection to a neighboring node
-	void addConnection(int c) {
-		connections[connectionCounter] = c;
-		connectionCounter = connectionCounter + 1;
-	}
+    //Adds connection to a neighboring node
+    void addConnection(int c)
+    {
+        connections[connectionCounter] = c;
+        connectionCounter = connectionCounter + 1;
+    }
 
-	//Prints all connections
-	void printConnections() {
-		for (int i = 0; i < numNodes; i++) {
-			if (connections[i] == -1) break;
-			else {
-				cout << connections[i];
-			}
-		}
-	}
+    //Prints all connections
+    void printConnections()
+    {
+        for (int i = 0; i < numNodes; i++)
+        {
+            if (connections[i] == -1) break;
+            else
+            {
+                cout << connections[i];
+            }
+        }
+    }
 
 };
 
 //Used to determine order of priority queue (lower priority/move distance is higher)
-class CompareNode {
+class CompareNode
+{
 public:
-	bool operator()(node & n1, node & n2)
-	{
-		return n1.getPriority() > n2.getPriority();
-	}
+    bool operator()(node & n1, node & n2)
+    {
+        return n1.getPriority() > n2.getPriority();
+    }
 };
 
 
@@ -170,29 +208,30 @@ MainGame::MainGame(int nN, nav_msgs::OccupancyGrid ob)
     og = ob;
 
 
-	_window = nullptr;
-	_renderer = nullptr;
-	sw = ob.info.width;
-	sh = ob.info.height;
-	_screenWidth = sw;
-	_screenHeight = sh;
-	_gameState = GameState::PLAY;
+    _window = nullptr;
+    _renderer = nullptr;
+    sw = ob.info.width;
+    sh = ob.info.height;
+    _screenWidth = sw;
+    _screenHeight = sh;
+    _gameState = GameState::PLAY;
 
-	//nodeList = new node* [numNodes];
-	occupancyGrid.resize(sw, vector<int>(sh, 0));
-	nodeList.resize(numNodes,nullptr);
-	closedNodeList.resize(numNodes,0);
-	addedNodes.resize(numNodes,0);
+    //nodeList = new node* [numNodes];
+    occupancyGrid.resize(sw, vector<int>(sh, 0));
+    nodeList.resize(numNodes,nullptr);
+    closedNodeList.resize(numNodes,0);
+    addedNodes.resize(numNodes,0);
 
 }
 //Can be called to exit application when error is thrown
-void fatalError(string errorString) {
-	cout << errorString << endl;
-	cout << "Enter any key to quit...";
-	int tmp;
-	cin >> tmp;
-	SDL_Quit();
-	exit(1);
+void fatalError(string errorString)
+{
+    cout << errorString << endl;
+    cout << "Enter any key to quit...";
+    int tmp;
+    cin >> tmp;
+    SDL_Quit();
+    exit(1);
 }
 
 //Destructor?? I don't know what this is...
@@ -203,10 +242,11 @@ MainGame::~MainGame()
 
 
 //Called from main class, starts application depending on if selectPoints==true, then starts gameLoop()
-void MainGame::run(float sx, float sy, int ex, int ey, int mD) {
+void MainGame::run(float sx, float sy, int ex, int ey, int mD)
+{
 
-	//maxDist
-	initSystems();
+    //maxDist
+    initSystems();
     parseOGrid();
     createObstacle();
     createObstacle();
@@ -218,21 +258,21 @@ void MainGame::run(float sx, float sy, int ex, int ey, int mD) {
     cout << "Press space to populate" << endl;
 
     float TLCornerXWFx = og.info.origin.position.x;
-    cout<<TLCornerXWFx<<endl;
+    //cout<<TLCornerXWFx<<endl;
     float TLCornerXWFy = og.info.origin.position.y + og.info.height*og.info.resolution;
     float quadXWFx = sx;
-    cout<<sx<<endl;
+    //cout<<sx<<endl;
     float quadXWFy = sy;
 
     float quadXWindowx = (quadXWFx-TLCornerXWFx);
-    cout<<quadXWindowx<<endl;
+    //cout<<quadXWindowx<<endl;
     float quadXWindowy = (quadXWFy-TLCornerXWFy)*-1/og.info.resolution;
 
 
     startX = quadXWindowx/og.info.resolution;
     startY = quadXWindowy;
-    cout<<startX<<endl;
-    cout<<startY<<endl;
+    //cout<<startX<<endl;
+    //cout<<startY<<endl;
 
     endX = ex;
     endY = ey;
@@ -240,10 +280,10 @@ void MainGame::run(float sx, float sy, int ex, int ey, int mD) {
 
     redrawSF();
     redrawSF();
-	gameLoop();
+    gameLoop();
 
-	SDL_SetRenderDrawColor(_renderer, 0, 0, 0, 255);
-	SDL_RenderClear(_renderer);
+    SDL_SetRenderDrawColor(_renderer, 0, 0, 0, 255);
+    SDL_RenderClear(_renderer);
     SDL_DestroyWindow(_window);
     SDL_Quit();
 
@@ -251,40 +291,46 @@ void MainGame::run(float sx, float sy, int ex, int ey, int mD) {
     //delete []nodeList;
     //delete []closedNodeList;
     //delete []addedNodes;
-	//cout<<"GameState = EXIT"<<endl;
+    //cout<<"GameState = EXIT"<<endl;
 }
 
 //Create window and initialize lists, makes white background
-void MainGame::initSystems() {
+void MainGame::initSystems()
+{
 
-	SDL_Init(SDL_INIT_EVERYTHING);
-	_window = SDL_CreateWindow("Probabilistic Roadmap", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, _screenWidth, _screenHeight, SDL_WINDOW_SHOWN);
-	_renderer = SDL_CreateRenderer(_window, -1, SDL_RENDERER_ACCELERATED);
-	if (_window == nullptr) {
-		fatalError("SDL Window could not be created!");
-	}
-	SDL_SetRenderDrawColor(_renderer, 0, 0, 0, 255);
-	SDL_RenderClear(_renderer);
+    SDL_Init(SDL_INIT_EVERYTHING);
+    _window = SDL_CreateWindow("Probabilistic Roadmap", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, _screenWidth, _screenHeight, SDL_WINDOW_SHOWN);
+    _renderer = SDL_CreateRenderer(_window, -1, SDL_RENDERER_ACCELERATED);
+    if (_window == nullptr)
+    {
+        fatalError("SDL Window could not be created!");
+    }
+    SDL_SetRenderDrawColor(_renderer, 0, 0, 0, 255);
+    SDL_RenderClear(_renderer);
 
-	for (int i = 0; i < numNodes; i++) {
-		closedNodeList[i] = -1;
-		addedNodes[i] = -1;
-	}
-	closedNodeList[0] = 0;
-	closedCounter = closedCounter + 1;
+    for (int i = 0; i < numNodes; i++)
+    {
+        closedNodeList[i] = -1;
+        addedNodes[i] = -1;
+    }
+    closedNodeList[0] = 0;
+    closedCounter = closedCounter + 1;
     stillRunning = true;
-	selectPts = false;
+
+    selectPts = true;
 
 
 
 }
 
 //If there is no error, continue to process input
-void MainGame::gameLoop() {
-	while (_gameState != GameState::EXIT) {
-		processInput();
-		//drawGame();
-	}
+void MainGame::gameLoop()
+{
+    while (_gameState != GameState::EXIT)
+    {
+        processInput();
+        //drawGame();
+    }
 
 }
 
@@ -294,121 +340,131 @@ int counter = 0;
 clock_t start, i1, i2, i3, i4, endClock;
 clock_t t1, t2;
 //True if selecting start position, false if selecting end position
-bool selectStart = true;
+bool selectStart = false;
 //Takes user input
-void MainGame::processInput() {
-	SDL_Event evnt;
-	while (SDL_PollEvent(&evnt) == true) {
-		switch (evnt.type) {
-            //If exit is clicked, close application
-            case SDL_QUIT:
-				_gameState = GameState::EXIT;
-				break;
-			//Mouse is clicked
-			case SDL_MOUSEBUTTONDOWN:
-				//Select start position
-				if (selectPts&&selectStart) {
-					SDL_SetRenderDrawColor(_renderer, 0, 0, 0, 255);
-					SDL_RenderClear(_renderer);
-					//createObstacle();
-					startX = evnt.button.x;
-					startY = evnt.button.y;
-					selectStart = false;
-					cout << "Select end point" << endl;
-				}
-				//Select end position
-				else if (selectPts&&selectStart == false) {
-					endX = evnt.button.x;
-					endY = evnt.button.y;
-					selectStart = true;
-					selectPts = false;
-					stillRunning = true;
-					createObstacle();
-					createObstacle();
-					redrawSF();
-					cout << "Press space to populate map" << endl;
-				}
-			//case SDL_MOUSEMOTION:
-			//	cout << evnt.motion.x << " " << evnt.motion.y << endl;
+void MainGame::processInput()
+{
+    SDL_Event evnt;
+    while (SDL_PollEvent(&evnt) == true)
+    {
+        switch (evnt.type)
+        {
+        //If exit is clicked, close application
+        case SDL_QUIT:
+            _gameState = GameState::EXIT;
+            break;
+        //Mouse is clicked
+        case SDL_MOUSEBUTTONDOWN:
+            //Select start position
+            if (selectPts&&selectStart)
+            {
+                SDL_SetRenderDrawColor(_renderer, 0, 0, 0, 255);
+                SDL_RenderClear(_renderer);
+                //createObstacle();
+                startX = evnt.button.x;
+                startY = evnt.button.y;
+                selectStart = false;
+                cout << "Select end point" << endl;
+            }
+            //Select end position
+            else if (selectPts&&selectStart == false)
+            {
+                endX = evnt.button.x;
+                endY = evnt.button.y;
+                selectPts = false;
+                stillRunning = true;
+                createObstacle();
+                createObstacle();
+                redrawSF();
+                cout << "Press space to populate map" << endl;
+            }
+        //case SDL_MOUSEMOTION:
+        //	cout << evnt.motion.x << " " << evnt.motion.y << endl;
 
-			//TODO: Fix clock
-			//If spacebar pressed
-			case SDL_KEYDOWN:
-				if (stillRunning) {
-					if (evnt.key.keysym.scancode == SDL_SCANCODE_SPACE) {
-						if (counter == 0) {
-							start = clock();
-							populate();
-							//populateTestMap();
-							createObstacle();
-							createObstacle();
+        //TODO: Fix clock
+        //If spacebar pressed
+        case SDL_KEYDOWN:
+            if (stillRunning)
+            {
+                if (evnt.key.keysym.scancode == SDL_SCANCODE_SPACE)
+                {
+                    if (counter == 0)
+                    {
+                        start = clock();
+                        populate();
+                        //populateTestMap();
+                        createObstacle();
+                        createObstacle();
 
-							i1 = clock();
-							cout << "Populate time: "<< (i1-start)/(double) CLOCKS_PER_SEC*1000 <<endl;
+                        i1 = clock();
+                        cout << "Populate time: "<< (i1-start)/(double) CLOCKS_PER_SEC*1000 <<endl;
 
-							cout << "Press space to connect nodes" << endl;
-							counter = counter + 1;
-						}
-						else if (counter == 1) {
-							i2 = clock();
-							connect();
-                            fillROSNodeArray();
-							i3 = clock();
-							cout << "Connect time: "<< (i3-i2)/(double) CLOCKS_PER_SEC*1000 <<endl;
-							//cout << "Press space to find path (A*)" << endl;
-                            cout << "----------------------"<<endl;
-							counter = 0;
-                            /*for(int i = 0;i<numNodes;i++){
-                                cout<<"Node "<<nodeList[i]->getArrayValue()<<":  x="<<nodeList[i]->getxPos()<<", y="<<nodeList[i]->getyPos()<<endl;
-                            }*/
-							stillRunning = false;
-							//cout << "Collision check time: " << timeTaken << endl;
-						}
-
-					}
-				}
-		}
-	}
+                        cout << "Press space to connect nodes" << endl;
+                        counter = counter + 1;
+                    }
+                    else if (counter == 1)
+                    {
+                        i2 = clock();
+                        connect();
+                        fillROSNodeArray();
+                        i3 = clock();
+                        cout << "Connect time: "<< (i3-i2)/(double) CLOCKS_PER_SEC*1000 <<endl;
+                        //cout << "Press space to find path (A*)" << endl;
+                        cout << "----------------------"<<endl;
+                        counter = 0;
+                        /*for(int i = 0;i<numNodes;i++){
+                            cout<<"Node "<<nodeList[i]->getArrayValue()<<":  x="<<nodeList[i]->getxPos()<<", y="<<nodeList[i]->getyPos()<<endl;
+                        }*/
+                        stillRunning = false;
+                        //cout << "Collision check time: " << timeTaken << endl;
+                    }
+                }
+            }
+        }
+    }
 }
 
 
 //Populates map of numNodes nodes
-void MainGame::populate() {
+void MainGame::populate()
+{
 
-	//Used to populate array
-	static node* a;
+    //Used to populate array
+    static node* a;
 
-	//Starting point
-	nodeList[0] = new node(startX, startY, 0, 10000, 0);
-	nodeList[0]->initCArray();
-	nodeList[0]->setParent(-5); //Parent is -5
-	SDL_Rect startRect;
-	startRect.h = nodeSize;
-	startRect.w = nodeSize;
-	startRect.x = startX-nodeSize/2;
-	startRect.y = startY-nodeSize/2;
-	SDL_SetRenderDrawColor(_renderer, 0, 255, 0, 255);
-	SDL_RenderFillRect(_renderer, &startRect);
+    //Starting point
+    nodeList[0] = new node(startX, startY, 0, 10000, 0);
+    nodeList[0]->initCArray();
+    nodeList[0]->setParent(-5); //Parent is -5
+    SDL_Rect startRect;
+    startRect.h = nodeSize;
+    startRect.w = nodeSize;
+    startRect.x = startX-nodeSize/2;
+    startRect.y = startY-nodeSize/2;
+    SDL_SetRenderDrawColor(_renderer, 0, 255, 0, 255);
+    SDL_RenderFillRect(_renderer, &startRect);
 
-	//Finish point
-	nodeList[1] = new node(endX, endY, 0, 10000, 1);
-	nodeList[1]->initCArray();
-	SDL_Rect finRect;
-	finRect.h = nodeSize;
-	finRect.w = nodeSize;
-	finRect.x = endX-nodeSize/2;
-	finRect.y = endY-nodeSize/2;
-	SDL_SetRenderDrawColor(_renderer, 255, 0, 0, 255);
-	SDL_RenderFillRect(_renderer, &finRect);
+    //Finish point
+    nodeList[1] = new node(endX, endY, 0, 10000, 1);
+    nodeList[1]->initCArray();
+    SDL_Rect finRect;
+    finRect.h = nodeSize;
+    finRect.w = nodeSize;
+    finRect.x = endX-nodeSize/2;
+    finRect.y = endY-nodeSize/2;
+    SDL_SetRenderDrawColor(_renderer, 255, 0, 0, 255);
+    SDL_RenderFillRect(_renderer, &finRect);
 
-	//Blue
-	SDL_SetRenderDrawColor(_renderer, 0, 0, 255, 255);
+    //Blue
+    SDL_SetRenderDrawColor(_renderer, 0, 0, 255, 255);
 
-	//Fill the rest of the array with random nodes
-	for (int i = 2; i < numNodes; i++) {
-		int randX = rand() % _screenWidth;
-		int randY = rand() % _screenHeight;
-		if(!occupancyGrid[randX][randY]){
+    //Fill the rest of the array with random nodes
+    for (int i = 2; i < numNodes; i++)
+    {
+        int randX = rand() % _screenWidth;
+        int randY = rand() % _screenHeight;
+        if(!occupancyGrid[randX][randY])
+        {
             a = new node(randX, randY, 0, 10000, i);
             nodeList[i] = a;
             nodeList[i]->initCArray();
@@ -418,22 +474,26 @@ void MainGame::populate() {
             nodeRect.x = randX-nodeSize/2;
             nodeRect.y = randY-nodeSize/2;
             SDL_RenderFillRect(_renderer, &nodeRect);
-		}
-		else{
+        }
+        else
+        {
             i=i-1;
-		}
-	}
+        }
+    }
 
-	SDL_RenderPresent(_renderer);
-	cout << "Populated nodes!" << endl;
+    SDL_RenderPresent(_renderer);
+    cout << "Populated nodes!" << endl;
 }
 
 //Sets position and draws obstacles. Can be called again to redraw
-void MainGame::createObstacle() {
+void MainGame::createObstacle()
+{
 
     SDL_SetRenderDrawColor(_renderer, 75, 0, 130, 255);
-    for(int i = 0; i<sw; i++){
-        for(int j = 0; j<sh; j++){
+    for(int i = 0; i<sw; i++)
+    {
+        for(int j = 0; j<sh; j++)
+        {
 
             if(occupancyGrid[i][j])SDL_RenderDrawPoint(_renderer,i,j);
 
@@ -442,53 +502,59 @@ void MainGame::createObstacle() {
 }
 
 //Connects nodes to its neighbors
-void MainGame::connect() {
+void MainGame::connect()
+{
 
-	//Number of connections
+    //Number of connections
 
     t1 = clock();
-	SDL_SetRenderDrawColor(_renderer, 0, 0, 255, 255);
-	//i = current node
-	for (int i = 0; i < numNodes; i++) {
-		//Check all nodes for possible connections (j=other nodes)
+    SDL_SetRenderDrawColor(_renderer, 0, 0, 255, 255);
+    //i = current node
+    for (int i = 0; i < numNodes; i++)
+    {
+        //Check all nodes for possible connections (j=other nodes)
 
-		for (int j = 0; j < numNodes; j++){
-			//t1 = clock();
-			//Don't connect a node to itself
-			if (i == j) {}
-			//Two different nodes:
+        for (int j = 0; j < numNodes; j++)
+        {
+            //t1 = clock();
+            //Don't connect a node to itself
+            if (i == j) {}
+            //Two different nodes:
 
-			else {
+            else
+            {
 
-				int dX = nodeList[i]->getxPos() - nodeList[j]->getxPos();
-				int dY = nodeList[i]->getyPos() - nodeList[j]->getyPos();
-				//If nodes are less than the max distance apart and are not blocked by an obstacle, connect and draw line
+                int dX = nodeList[i]->getxPos() - nodeList[j]->getxPos();
+                int dY = nodeList[i]->getyPos() - nodeList[j]->getyPos();
+                //If nodes are less than the max distance apart and are not blocked by an obstacle, connect and draw line
 
-				if (static_cast<int>(sqrt(dX*dX + dY*dY)) < maxNodeDist){
-					if(Line(nodeList[i]->getxPos(), nodeList[i]->getyPos(), nodeList[j]->getxPos(), nodeList[j]->getyPos())){
+                if (static_cast<int>(sqrt(dX*dX + dY*dY)) < maxNodeDist)
+                {
+                    if(Line(nodeList[i]->getxPos(), nodeList[i]->getyPos(), nodeList[j]->getxPos(), nodeList[j]->getyPos()))
+                    {
                         nodeList[i]->addConnection(j);
                         SDL_RenderDrawLine(_renderer, nodeList[i]->getxPos(), nodeList[i]->getyPos(), nodeList[j]->getxPos(), nodeList[j]->getyPos());
-					}
-				}
+                    }
+                }
 
 
 
-			}
+            }
             //t2 = clock();
             //timeTaken = timeTaken +(t2-t1)/(double) CLOCKS_PER_SEC*1000;
-		}
+        }
 
-	}
-	SDL_RenderPresent(_renderer);
-	cout << "Connected Nodes!" << endl;
+    }
+    SDL_RenderPresent(_renderer);
+    cout << "Connected Nodes!" << endl;
 
 
 
-	//Re-draw obstacles and start/finish
-	createObstacle();
-	createObstacle();
-	redrawSF();
-	redrawSF();
+    //Re-draw obstacles and start/finish
+    createObstacle();
+    createObstacle();
+    redrawSF();
+    redrawSF();
 
 }
 
@@ -497,83 +563,88 @@ bool MainGame::Line(  float x1, float y1,  float x2,  float y2)
 {
 
 
-  const bool steep = (fabs(y2 - y1) > fabs(x2 - x1));
-  if(steep)
-  {
-    std::swap(x1, y1);
-    std::swap(x2, y2);
-  }
-
-  if(x1 > x2)
-  {
-    std::swap(x1, x2);
-    std::swap(y1, y2);
-  }
-
-  const float dx = x2 - x1;
-  const float dy = fabs(y2 - y1);
-
-  float error = dx / 2.0f;
-  const int ystep = (y1 < y2) ? 1 : -1;
-  int y = (int)y1;
-
-  const int maxX = (int)x2;
-
-  for(int x=(int)x1; x<maxX; x++)
-  {
+    const bool steep = (fabs(y2 - y1) > fabs(x2 - x1));
     if(steep)
     {
-        //SetPixel(y,x, color);
-        if(occupancyGrid[y][x]){
-            return false;
+        std::swap(x1, y1);
+        std::swap(x2, y2);
+    }
+
+    if(x1 > x2)
+    {
+        std::swap(x1, x2);
+        std::swap(y1, y2);
+    }
+
+    const float dx = x2 - x1;
+    const float dy = fabs(y2 - y1);
+
+    float error = dx / 2.0f;
+    const int ystep = (y1 < y2) ? 1 : -1;
+    int y = (int)y1;
+
+    const int maxX = (int)x2;
+
+    for(int x=(int)x1; x<maxX; x++)
+    {
+        if(steep)
+        {
+            //SetPixel(y,x, color);
+            if(occupancyGrid[y][x])
+            {
+                return false;
+            }
+        }
+        else
+        {
+            //SetPixel(x,y, color);
+            if(occupancyGrid[x][y])
+            {
+
+                return false;
+            }
+        }
+
+        error -= dy;
+        if(error < 0)
+        {
+            y += ystep;
+            error += dx;
         }
     }
-    else
-    {
-        //SetPixel(x,y, color);
-        if(occupancyGrid[x][y]){
 
-            return false;
-        }
-    }
-
-    error -= dy;
-    if(error < 0)
-    {
-        y += ystep;
-        error += dx;
-    }
-  }
-
-  return true;
+    return true;
 }
 
 //Re-draw start and finish rectangles for clarity
-void MainGame::redrawSF() {
-	//cout<<"called redraw SF"<<endl;
-	//Starting point
-	SDL_Rect startRect;
-	startRect.h = nodeSize;
-	startRect.w = nodeSize;
-	startRect.x = startX-nodeSize/2;
-	startRect.y = startY - nodeSize / 2;
-	SDL_SetRenderDrawColor(_renderer, 0, 255, 0, 255);
-	SDL_RenderFillRect(_renderer, &startRect);
+void MainGame::redrawSF()
+{
+    //cout<<"called redraw SF"<<endl;
+    //Starting point
+    SDL_Rect startRect;
+    startRect.h = nodeSize;
+    startRect.w = nodeSize;
+    startRect.x = startX-nodeSize/2;
+    startRect.y = startY - nodeSize / 2;
+    SDL_SetRenderDrawColor(_renderer, 0, 255, 0, 255);
+    SDL_RenderFillRect(_renderer, &startRect);
 
-	//Finish point
-	SDL_Rect finRect;
-	finRect.h = nodeSize;
-	finRect.w = nodeSize;
-	finRect.x = endX - nodeSize / 2;
-	finRect.y = endY - nodeSize / 2;
-	SDL_SetRenderDrawColor(_renderer, 255, 0, 0, 255);
-	SDL_RenderFillRect(_renderer, &finRect);
+    //Finish point
+    SDL_Rect finRect;
+    finRect.h = nodeSize;
+    finRect.w = nodeSize;
+    finRect.x = endX - nodeSize / 2;
+    finRect.y = endY - nodeSize / 2;
+    SDL_SetRenderDrawColor(_renderer, 255, 0, 0, 255);
+    SDL_RenderFillRect(_renderer, &finRect);
 
-	SDL_RenderPresent(_renderer);
+    SDL_RenderPresent(_renderer);
 }
 
-void MainGame::fillROSNodeArray(){
-    for(int i = 0; i<numNodes; i++){
+void MainGame::fillROSNodeArray()
+{
+    for(int i = 0; i<numNodes; i++)
+    {
         beginner_tutorials::node curN;
         curN.id =nodeList[i]->getArrayValue();
         curN.x = nodeList[i]->getxPos();
@@ -582,7 +653,8 @@ void MainGame::fillROSNodeArray(){
 
         vector<int> cnA = nodeList[i]->getConnectionArray();
 
-        for(int j = 0; j<numNodes; j++){
+        for(int j = 0; j<numNodes; j++)
+        {
             curN.connections.push_back(cnA[j]);
         }
         //cout<<"Num connections: "<<curN.connections.size()<<endl;
@@ -591,15 +663,18 @@ void MainGame::fillROSNodeArray(){
     //cout<<numNodes<<n.nodeLst.size()<<endl;
 }
 
-void MainGame::parseOGrid(){
+void MainGame::parseOGrid()
+{
     int oCounter = 0;
     //reverse(og.data.begin(),og.data.end());
 //for(int j = 0; j<sh; j++){
 
     //for(int i = sw-1; i>=0; i--){
-        for(int j = sh-1; j>=0; j--){
+    for(int j = sh-1; j>=0; j--)
+    {
 
-                for(int i = 0; i<sw; i++){
+        for(int i = 0; i<sw; i++)
+        {
 
 
             occupancyGrid[i][j] = og.data[oCounter];
