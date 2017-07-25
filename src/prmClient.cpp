@@ -1,8 +1,8 @@
 #include "ros/ros.h"
-#include "beginner_tutorials/PRM.h"
-#include "beginner_tutorials/PRMQuery.h"
-#include <beginner_tutorials/node.h>
-#include <beginner_tutorials/nodeArray.h>
+#include "prm/PRM.h"
+#include "prm/PRMQuery.h"
+#include <prm/node.h>
+#include <prm/nodeArray.h>
 #include <nav_msgs/OccupancyGrid.h>
 #include <cstdlib>
 /*
@@ -16,11 +16,11 @@ int main(int argc, char **argv)
   ros::init(argc, argv, "PRM_Client");
 
   ros::NodeHandle n;
-  ros::ServiceClient client = n.serviceClient<beginner_tutorials::PRM>("PRM");
-  beginner_tutorials::PRM srv;
+  ros::ServiceClient client = n.serviceClient<prm::PRM>("PRM");
+  prm::PRM srv;
 
-  ros::ServiceClient clientQ = n.serviceClient<beginner_tutorials::PRMQuery>("PRMQuery");
-  beginner_tutorials::PRMQuery srvQ;
+  ros::ServiceClient clientQ = n.serviceClient<prm::PRMQuery>("PRMQuery");
+  prm::PRMQuery srvQ;
   //srv.request.a = 0;
   srv.request.startX = 20;
   srv.request.startY = 20;
@@ -74,9 +74,9 @@ int main(int argc, char **argv)
   if (client.call(srv))
   {
     /*
-    for(std::vector<beginner_tutorials::node>::const_iterator it = srv.response.nA.nodeLst.begin(); it != srv.response.nA.nodeLst.end(); ++it)
+    for(std::vector<prm::node>::const_iterator it = srv.response.nA.nodeLst.begin(); it != srv.response.nA.nodeLst.end(); ++it)
     {
-	    beginner_tutorials::node g;
+	    prm::node g;
 	    g = *it;
 	    std::cout<<g.id<<std::endl;
     }
@@ -95,9 +95,9 @@ int main(int argc, char **argv)
 
   if(clientQ.call(srvQ)){
     std::cout<<"Path:"<<std::endl;
-    for(std::vector<beginner_tutorials::node>::const_iterator it = srvQ.response.nFinal.nodeLst.begin(); it != srvQ.response.nFinal.nodeLst.end(); ++it)
+    for(std::vector<prm::node>::const_iterator it = srvQ.response.nFinal.nodeLst.begin(); it != srvQ.response.nFinal.nodeLst.end(); ++it)
     {
-	    beginner_tutorials::node g;
+	    prm::node g;
 	    g = *it;
 	    std::cout<<"Node: "<<g.id<<" xPos: "<<g.x<<" yPos: "<<g.y<<std::endl;
     }

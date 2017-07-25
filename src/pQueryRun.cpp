@@ -1,14 +1,14 @@
 #include "pQuery.h"
 #include "ros/ros.h"
-#include "beginner_tutorials/PRMQuery.h"
-#include <beginner_tutorials/node.h>
-#include <beginner_tutorials/nodeArray.h>
+#include "prm/PRMQuery.h"
+#include <prm/node.h>
+#include <prm/nodeArray.h>
 #include <nav_msgs/OccupancyGrid.h>
 
 using namespace std;
 
-bool timeTaken(beginner_tutorials::PRMQuery::Request  &req,
-               beginner_tutorials::PRMQuery::Response &res){
+bool timeTaken(prm::PRMQuery::Request  &req,
+               prm::PRMQuery::Response &res){
     std::cout<<"running"<<std::endl;
     pQuery queryGame(req.numNodes, req.maxDistance, req.o);
     queryGame.n = req.nA;
@@ -21,9 +21,9 @@ bool timeTaken(beginner_tutorials::PRMQuery::Request  &req,
 	res.nFinal = queryGame.nodePath;
 	//res.nA = mainGame.n;
 	/*
-	for(std::vector<beginner_tutorials::node>::const_iterator it = mainGame.n.nodeLst.begin(); it != mainGame.n.nodeLst.end(); ++it)
+	for(std::vector<prm::node>::const_iterator it = mainGame.n.nodeLst.begin(); it != mainGame.n.nodeLst.end(); ++it)
 	{
-	    beginner_tutorials::node g;
+	    prm::node g;
 	    g = *it;
 	    cout<<g.id<<endl;
     }

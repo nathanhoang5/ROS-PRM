@@ -1,7 +1,7 @@
 #pragma once
 #include <SDL.h>
-#include <beginner_tutorials/node.h>
-#include <beginner_tutorials/nodeArray.h>
+#include <prm/node.h>
+#include <prm/nodeArray.h>
 #include <nav_msgs/OccupancyGrid.h>
 
 enum class GameState{PLAY,EXIT};
@@ -17,8 +17,8 @@ public:
     int ex;
     int ey;
 	void run();
-    beginner_tutorials::nodeArray n;
-    beginner_tutorials::nodeArray nodePath;
+    prm::nodeArray n;
+    prm::nodeArray nodePath;
 
 
 private:

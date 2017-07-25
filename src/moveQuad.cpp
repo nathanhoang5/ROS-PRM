@@ -1,6 +1,6 @@
 #include <ros/ros.h>
 #include <actionlib/server/simple_action_server.h>
-#include <beginner_tutorials/moveQuadAction.h>
+#include <prm/moveQuadAction.h>
 #include <px4_control/PVA.h>
 #include <px4_control/PVAarray.h>
 
@@ -102,12 +102,12 @@ public:
 protected:
 
   ros::NodeHandle nh_;
-  actionlib::SimpleActionServer<beginner_tutorials::moveQuadAction> as_;
+  actionlib::SimpleActionServer<prm::moveQuadAction> as_;
   std::string action_name_;
   px4_control::PVAarray targetNodes;
   px4_control::PVA curTarget;
-  beginner_tutorials::moveQuadFeedback feedback_;
-  beginner_tutorials::moveQuadResult result_;
+  prm::moveQuadFeedback feedback_;
+  prm::moveQuadResult result_;
   ros::Subscriber sub_;
   ros::Publisher PVAControl;
   float maxDev = .2;

@@ -6,8 +6,8 @@
 #include <ratio>
 #include <ctime>
 #include <vector>
-#include <beginner_tutorials/node.h>
-#include <beginner_tutorials/nodeArray.h>
+#include <prm/node.h>
+#include <prm/nodeArray.h>
 #include <nav_msgs/OccupancyGrid.h>
 
 
@@ -63,7 +63,7 @@ int aNCounter = 0;
 
 double runTime = 0;
 
-//beginner_tutorials::nodeArray n;
+//prm::nodeArray n;
 
 //Each point stored as a node
 class node
@@ -357,9 +357,9 @@ void pQuery::fillLocalNodeArray()
 {
     static node* a;
     int aPos = 0;
-    for(std::vector<beginner_tutorials::node>::const_iterator it = n.nodeLst.begin(); it != n.nodeLst.end(); ++it)
+    for(std::vector<prm::node>::const_iterator it = n.nodeLst.begin(); it != n.nodeLst.end(); ++it)
     {
-        beginner_tutorials::node g;
+        prm::node g;
         g = *it;
 
         nodeList[aPos] = new node(g.x, g.y, 0, 10000, g.id);
@@ -571,7 +571,7 @@ void pQuery::fillROSNodeArray()
 {
     for(int i = 0; i<numNodes; i++)
     {
-        beginner_tutorials::node curN;
+        prm::node curN;
         curN.id =nodeList[i]->getArrayValue();
         curN.x = nodeList[i]->getxPos();
         curN.y = nodeList[i]->getyPos();
@@ -796,7 +796,7 @@ void pQuery::foundNode(int a)
     pathList += to_string(nodeList[curNode]->getArrayValue());
     pathList += " ";
 
-    beginner_tutorials::node curN;
+    prm::node curN;
     curN.id = nodeList[1]->getArrayValue();
     curN.x = ((nodeList[1]->getxPos())*og.info.resolution)+og.info.origin.position.x;
     curN.y = ((nodeList[1]->getyPos())*og.info.resolution/-1)+og.info.origin.position.y + og.info.height*og.info.resolution;
@@ -853,9 +853,9 @@ void pQuery::foundNode(int a)
     SDL_RenderPresent(_renderer);
     reverse(nodePath.nodeLst.begin(),nodePath.nodeLst.end());
 
-    for(std::vector<beginner_tutorials::node>::const_iterator it = nodePath.nodeLst.begin(); it != nodePath.nodeLst.end(); ++it)
+    for(std::vector<prm::node>::const_iterator it = nodePath.nodeLst.begin(); it != nodePath.nodeLst.end(); ++it)
     {
-        beginner_tutorials::node g;
+        prm::node g;
         g = *it;
         std::cout<<"Node: "<<g.id<<" xPos: "<<g.x<<" yPos: "<<g.y<<std::endl;
     }

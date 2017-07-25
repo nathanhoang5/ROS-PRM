@@ -1,19 +1,19 @@
 #pragma once
 #include <SDL.h>
-#include <beginner_tutorials/node.h>
-#include <beginner_tutorials/nodeArray.h>
+#include <prm/node.h>
+#include <prm/nodeArray.h>
 #include <nav_msgs/OccupancyGrid.h>
 
 enum class GameState{PLAY,EXIT};
 
-class MainGame
+class populateNodes
 {
 public:
-	MainGame(int nN, nav_msgs::OccupancyGrid ob);
-	~MainGame();
+	populateNodes(int nN, nav_msgs::OccupancyGrid ob);
+	~populateNodes();
     int nNodes;
 	void run(float sx, float sy, int ex, int ey, int mD);
-    beginner_tutorials::nodeArray n;
+    prm::nodeArray n;
 
 
 

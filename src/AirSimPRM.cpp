@@ -1,14 +1,14 @@
 #include "ros/ros.h"
-#include "beginner_tutorials/PRM.h"
-#include "beginner_tutorials/PRMQuery.h"
-#include <beginner_tutorials/node.h>
-#include <beginner_tutorials/nodeArray.h>
+#include "prm/PRM.h"
+#include "prm/PRMQuery.h"
+#include <prm/node.h>
+#include <prm/nodeArray.h>
 #include <nav_msgs/OccupancyGrid.h>
 #include <px4_control/PVA.h>
 #include <px4_control/PVAarray.h>
 #include <actionlib/client/simple_action_client.h>
 #include <actionlib/client/terminal_state.h>
-#include <beginner_tutorials/moveQuadAction.h>
+#include <prm/moveQuadAction.h>
 #include <cstdlib>
 
 float x = -3;
@@ -21,11 +21,11 @@ void prmCallback(const nav_msgs::OccupancyGrid& o)
     {
         ros::NodeHandle nh;
 
-        ros::ServiceClient client = nh.serviceClient<beginner_tutorials::PRM>("PRM");
-        beginner_tutorials::PRM srv;
+        ros::ServiceClient client = nh.serviceClient<prm::PRM>("PRM");
+        prm::PRM srv;
 
-        ros::ServiceClient clientQ = nh.serviceClient<beginner_tutorials::PRMQuery>("PRMQuery");
-        beginner_tutorials::PRMQuery srvQ;
+        ros::ServiceClient clientQ = nh.serviceClient<prm::PRMQuery>("PRMQuery");
+        prm::PRMQuery srvQ;
 
         srv.request.startX = x;
         srv.request.startY = y;
@@ -61,9 +61,9 @@ void prmCallback(const nav_msgs::OccupancyGrid& o)
         {
             px4_control::PVAarray targetArray;
             std::cout<<"Path:"<<std::endl;
-            for(std::vector<beginner_tutorials::node>::const_iterator it = srvQ.response.nFinal.nodeLst.begin(); it != srvQ.response.nFinal.nodeLst.end(); ++it)
+            for(std::vector<prm::node>::const_iterator it = srvQ.response.nFinal.nodeLst.begin(); it != srvQ.response.nFinal.nodeLst.end(); ++it)
             {
-                beginner_tutorials::node g;
+                prm::node g;
                 g = *it;
                 px4_control::PVA curTarget;
                 curTarget.Pos.x = g.x;
@@ -72,7 +72,7 @@ void prmCallback(const nav_msgs::OccupancyGrid& o)
                 targetArray.data.push_back(curTarget);
                 std::cout<<"Node: "<<g.id<<" xPos: "<<g.x<<" yPos: "<<g.y<<std::endl;
             }
-            actionlib::SimpleActionClient<beginner_tutorials::moveQuadAction> ac("movingQuad", true);
+            actionlib::SimpleActionClient<prm::moveQuadAction> ac("movingQuad", true);
 
             ROS_INFO("Waiting for action server to start.");
             // wait for the action server to start
@@ -80,7 +80,7 @@ void prmCallback(const nav_msgs::OccupancyGrid& o)
 
             ROS_INFO("Action server started, sending goal.");
             // send a goal to the action
-            beginner_tutorials::moveQuadGoal goal;
+            prm::moveQuadGoal goal;
             goal.target = targetArray;
             ac.sendGoal(goal);
 

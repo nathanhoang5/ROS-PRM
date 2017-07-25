@@ -1,12 +1,12 @@
-#include "MainGame.h"
+#include "populateNodes.h"
 #include <iostream>
 #include <queue>
 #include <SDL.h>
 #include <chrono>
 #include <ratio>
 #include <ctime>
-#include <beginner_tutorials/node.h>
-#include <beginner_tutorials/nodeArray.h>
+#include <prm/node.h>
+#include <prm/nodeArray.h>
 #include <nav_msgs/OccupancyGrid.h>
 #include <vector>
 
@@ -202,7 +202,7 @@ public:
 vector<node*> nodeList;
 
 //Initialize window parameters
-MainGame::MainGame(int nN, nav_msgs::OccupancyGrid ob)
+populateNodes::populateNodes(int nN, nav_msgs::OccupancyGrid ob)
 {
     numNodes = nN;
     og = ob;
@@ -235,14 +235,14 @@ void fatalError(string errorString)
 }
 
 //Destructor?? I don't know what this is...
-MainGame::~MainGame()
+populateNodes::~populateNodes()
 {
 
 }
 
 
 //Called from main class, starts application depending on if selectPoints==true, then starts gameLoop()
-void MainGame::run(float sx, float sy, int ex, int ey, int mD)
+void populateNodes::run(float sx, float sy, int ex, int ey, int mD)
 {
 
     //maxDist
@@ -295,7 +295,7 @@ void MainGame::run(float sx, float sy, int ex, int ey, int mD)
 }
 
 //Create window and initialize lists, makes white background
-void MainGame::initSystems()
+void populateNodes::initSystems()
 {
 
     SDL_Init(SDL_INIT_EVERYTHING);
@@ -324,7 +324,7 @@ void MainGame::initSystems()
 }
 
 //If there is no error, continue to process input
-void MainGame::gameLoop()
+void populateNodes::gameLoop()
 {
     while (_gameState != GameState::EXIT)
     {
@@ -342,7 +342,7 @@ clock_t t1, t2;
 //True if selecting start position, false if selecting end position
 bool selectStart = false;
 //Takes user input
-void MainGame::processInput()
+void populateNodes::processInput()
 {
     SDL_Event evnt;
     while (SDL_PollEvent(&evnt) == true)
@@ -426,7 +426,7 @@ void MainGame::processInput()
 
 
 //Populates map of numNodes nodes
-void MainGame::populate()
+void populateNodes::populate()
 {
 
     //Used to populate array
@@ -486,7 +486,7 @@ void MainGame::populate()
 }
 
 //Sets position and draws obstacles. Can be called again to redraw
-void MainGame::createObstacle()
+void populateNodes::createObstacle()
 {
 
     SDL_SetRenderDrawColor(_renderer, 75, 0, 130, 255);
@@ -502,7 +502,7 @@ void MainGame::createObstacle()
 }
 
 //Connects nodes to its neighbors
-void MainGame::connect()
+void populateNodes::connect()
 {
 
     //Number of connections
@@ -559,7 +559,7 @@ void MainGame::connect()
 }
 
 // Bresenham's line algorithm, taken from https://rosettacode.org/wiki/Bitmap/Bresenham%27s_line_algorithm#C.2B.2B
-bool MainGame::Line(  float x1, float y1,  float x2,  float y2)
+bool populateNodes::Line(  float x1, float y1,  float x2,  float y2)
 {
 
 
@@ -617,7 +617,7 @@ bool MainGame::Line(  float x1, float y1,  float x2,  float y2)
 }
 
 //Re-draw start and finish rectangles for clarity
-void MainGame::redrawSF()
+void populateNodes::redrawSF()
 {
     //cout<<"called redraw SF"<<endl;
     //Starting point
@@ -641,11 +641,11 @@ void MainGame::redrawSF()
     SDL_RenderPresent(_renderer);
 }
 
-void MainGame::fillROSNodeArray()
+void populateNodes::fillROSNodeArray()
 {
     for(int i = 0; i<numNodes; i++)
     {
-        beginner_tutorials::node curN;
+        prm::node curN;
         curN.id =nodeList[i]->getArrayValue();
         curN.x = nodeList[i]->getxPos();
         curN.y = nodeList[i]->getyPos();
@@ -663,7 +663,7 @@ void MainGame::fillROSNodeArray()
     //cout<<numNodes<<n.nodeLst.size()<<endl;
 }
 
-void MainGame::parseOGrid()
+void populateNodes::parseOGrid()
 {
     int oCounter = 0;
     //reverse(og.data.begin(),og.data.end());

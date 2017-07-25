@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package>
-  <name>beginner_tutorials</name>
+  <name>prm</name>
   <version>0.0.0</version>
-  <description>The beginner_tutorials package</description>
+  <description>prm package</description>
 
   <maintainer email="nathan@todo.todo">nathan</maintainer>
 
