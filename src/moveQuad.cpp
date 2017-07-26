@@ -30,8 +30,10 @@ public:
   {
 
     targetNodes = as_.acceptNewGoal()->target;
-    px4_control::PVA PVAmsg = targetNodes.data.front();
-    PVAControl.publish(PVAmsg);
+    curTarget = targetNodes.data.front();
+    PVAControl.publish(curTarget);
+    ROS_INFO("Publishhing first node!");
+    std::cout<<"Publishing first node "<< targetNodes.data.front().Pos.x;
     targetNodes.data.erase(targetNodes.data.begin());
 
   }
@@ -46,6 +48,7 @@ public:
   void positionCB(const geometry_msgs::Pose& curPos)
   {
     // make sure that the action hasn't been canceled
+
     if (!as_.isActive())
       return;
     /*
@@ -58,8 +61,17 @@ public:
     sum_sq_ += pow(msg->data, 2);
     feedback_.std_dev = sqrt(fabs((sum_sq_/data_count_) - pow(feedback_.mean, 2)));
     */
+    ROS_INFO("CB is being called");
+    maxDev = 1;
     feedback_.currentPosition = curPos;
     as_.publishFeedback(feedback_);
+    ROS_INFO("Current x: %f", curPos.position.x);
+    ROS_INFO("Current xmin: %f", curTarget.Pos.x-maxDev);
+    ROS_INFO("Current xmax: %f", curTarget.Pos.x+maxDev);
+    ROS_INFO("Current y: %f", curPos.position.y);
+    ROS_INFO("Current ymin: %f", curTarget.Pos.y-maxDev);
+    ROS_INFO("Current ymax: %f", curTarget.Pos.y+maxDev);
+
     if(curPos.position.x > curTarget.Pos.x-maxDev && curPos.position.x < curTarget.Pos.x+maxDev &&
        curPos.position.y > curTarget.Pos.y-maxDev && curPos.position.y < curTarget.Pos.y+maxDev ){
 
@@ -71,9 +83,10 @@ public:
 
        }
        else{
-           px4_control::PVA PVAmsg = targetNodes.data.front();
-           PVAControl.publish(PVAmsg);
+           curTarget = targetNodes.data.front();
+           PVAControl.publish(curTarget);
            targetNodes.data.erase(targetNodes.data.begin());
+           ROS_INFO("Publishing next node");
        }
 
     }
@@ -110,13 +123,13 @@ protected:
   prm::moveQuadResult result_;
   ros::Subscriber sub_;
   ros::Publisher PVAControl;
-  float maxDev = .2;
+  float maxDev = .15;
 };
 
 int main(int argc, char** argv)
 {
   ros::init(argc, argv, "movingQuad");
-
+  std::cout<<"Initialized node"<<std::endl;
   moveQuadAction mover(ros::this_node::getName());
   ros::spin();
 

@@ -378,7 +378,7 @@ void pQuery::fillLocalNodeArray()
         //std::cout<<"Node "<<nodeList[aPos]->getArrayValue()<<" cc: "<<nodeList[aPos]->getConnectionCounter()<<std::endl;
         aPos = aPos+1;
     }
-    setStartEnd();
+    //setStartEnd();
     nodeList[0]->setParent(-5);
 }
 

@@ -14,12 +14,14 @@
 float x = -3;
 float y = -3;
 float z = 5;
+bool needsReset = true;
 
 void prmCallback(const nav_msgs::OccupancyGrid& o)
 {
-    if(x!=-3&&y!=-3)
+    if(!needsReset)
     {
         ros::NodeHandle nh;
+        needsReset = true;
 
         ros::ServiceClient client = nh.serviceClient<prm::PRM>("PRM");
         prm::PRM srv;
@@ -109,6 +111,7 @@ void quadPosSetter(const geometry_msgs::Pose& p)
 {
     x = p.position.x;
     y = p.position.y;
+    needsReset = false;
 }
 
 
