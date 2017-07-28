@@ -26,6 +26,7 @@ bool needsReset = true;
 
 void prmCallback(const nav_msgs::OccupancyGrid& o)
 {
+    
     if(!needsReset)
     {
         
@@ -138,7 +139,7 @@ int main(int argc, char **argv)
 
     ros::NodeHandle n;
 
-    ros::Subscriber sub = n.subscribe("projected_map", 1000, prmCallback);
+    ros::Subscriber sub = n.subscribe("projected_map", 1, prmCallback);
     ros::Subscriber quadPosSub = n.subscribe("Airsim/quadPos",1, quadPosSetter);
 
     ros::spin();

@@ -271,8 +271,8 @@ void populateNodes::run(float sx, float sy, int ex, int ey, int mD)
 
     startX = quadXWindowx/og.info.resolution;
     startY = quadXWindowy;
-    //cout<<startX<<endl;
-    //cout<<startY<<endl;
+    // cout<<sx<<endl;
+    // cout<<sy<<endl;
 
     endX = ex;
     endY = ey;
@@ -668,7 +668,7 @@ void populateNodes::parseOGrid()
     int oCounter = 0;
     //reverse(og.data.begin(),og.data.end());
 //for(int j = 0; j<sh; j++){
-
+    int bufferSize = .75/og.info.resolution;
     //for(int i = sw-1; i>=0; i--){
     for(int j = sh-1; j>=0; j--)
     {
@@ -676,8 +676,25 @@ void populateNodes::parseOGrid()
         for(int i = 0; i<sw; i++)
         {
 
-
             occupancyGrid[i][j] = og.data[oCounter];
+            if(occupancyGrid[i][j]){
+                int startPosX = i-bufferSize;
+                int startPosY = j-bufferSize;
+                int endPosX   = i+bufferSize;
+                int endPosY   = j+bufferSize;
+
+                while (startPosX<0)startPosX++;
+                while (startPosY<0)startPosY++;
+                while (endPosX>=og.info.width)endPosX--;
+                while (endPosY>=og.info.height)endPosY--;
+
+                for (int rowNum=startPosX; rowNum<=endPosX; rowNum++) {
+                    for (int colNum=startPosY; colNum<=endPosY; colNum++) {
+                        occupancyGrid[rowNum][colNum]=1;
+                    }
+                }
+
+            }
             oCounter++;
         }
     }

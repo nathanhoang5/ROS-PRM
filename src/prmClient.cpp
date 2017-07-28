@@ -11,6 +11,14 @@ void prmCallback(const nav_msgs::OccupancyGrid& o){
 
 }
 */
+
+/* 
+max distance = 50, resolution = .1 : good fly distance = 5m
+grid area = length*width*resolution^2
+nodes: .4 nodes/m^2
+nodes needed = .4 * grid area
+*/
+
 int main(int argc, char **argv)
 {
   ros::init(argc, argv, "PRM_Client");

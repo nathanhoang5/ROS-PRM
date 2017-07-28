@@ -32,7 +32,7 @@ private:
 	void redrawSF();
 	void fillROSNodeArray();
 	void connect(int a);
-	bool Line(  float x1, float y1,  float x2,  float y2);
+	bool Line(float x1, float y1, float x2, float y2);
 	void query();
 	int getMoveDist(int a, int b);
 	void foundNode(int a);

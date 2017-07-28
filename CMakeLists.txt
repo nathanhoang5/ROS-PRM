@@ -24,6 +24,7 @@ add_message_files(
    FILES
    PRM.srv
    PRMQuery.srv
+   circularMissionPlan.srv
  )
 
 add_action_files(

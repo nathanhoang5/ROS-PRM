@@ -506,7 +506,7 @@ void pQuery::processInput()
                         //Adds time taken for each section and print
                         double time_elapsed = double(endClock - i4)/(double) CLOCKS_PER_SEC *1000;
                         //cout << "Query time: "<< (endClock-i4)/(double) CLOCKS_PER_SEC*1000 <<endl;
-                        cout << "Time to calculate the route (ms): " << time_elapsed << endl;
+                        cout << "Time to calculate (ms): " << time_elapsed << endl;
 
                         cout << "----------------------"<<endl;
                         //cout << "Clocks per second: " << (double) CLOCKS_PER_SEC<<endl;
@@ -718,7 +718,8 @@ void pQuery::query()
         if (pq.size() == 0)
         {
             cout<<"No path to end!"<<endl;
-            gameLoop();
+            // gameLoop();
+            break;
         }
         //The current node being evaluated
         int i = pq.top().getArrayValue();
