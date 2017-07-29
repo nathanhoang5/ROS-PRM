@@ -60,9 +60,9 @@ public:
       result_.finalPosition.position.x = curPos.position.x;
       result_.finalPosition.position.y = curPos.position.y;
       result_.finalPosition.position.z = curPos.position.z;
-      as_.setSucceeded(result_);
       finished = false;
       spin = false;
+      as_.setSucceeded(result_);
     }
     else if(!spin){
       if(curPos.position.x > curTarget.Pos.x-maxDev && curPos.position.x < curTarget.Pos.x+maxDev &&

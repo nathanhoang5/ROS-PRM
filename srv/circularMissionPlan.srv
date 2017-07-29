@@ -1,6 +1,6 @@
 nav_msgs/OccupancyGrid o
 int64 dr
 int64 dx
-int64 maxDistance
+int64 maxRadius
 ---
 geometry_msgs/Point p

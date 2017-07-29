@@ -64,6 +64,8 @@ add_library(populateNodes src/populateNodes.cpp)
 add_dependencies(populateNodes prm_generate_messages_cpp)
 add_library(pQuery src/pQuery.cpp)
 add_dependencies(pQuery prm_generate_messages_cpp)
+add_library(circleMP src/circleMP.cpp)
+add_dependencies(circleMP prm_generate_messages_cpp)
 
 add_executable(pubPVA src/pubPVA.cpp)
 target_link_libraries(pubPVA ${catkin_LIBRARIES})
@@ -76,6 +78,14 @@ add_dependencies(pNodesRun prm_generate_messages_cpp)
 add_executable(pQueryRun src/pQueryRun.cpp)
 target_link_libraries(pQueryRun ${catkin_LIBRARIES} pQuery SDL2)
 add_dependencies(pQueryRun prm_generate_messages_cpp)
+
+add_executable(circleMPRun src/circleMPRun.cpp)
+target_link_libraries(circleMPRun ${catkin_LIBRARIES} circleMP)
+add_dependencies(circleMPRun prm_generate_messages_cpp)
+
+add_executable(mpClient src/mpClient.cpp)
+target_link_libraries(mpClient ${catkin_LIBRARIES} SDL2)
+add_dependencies(mpClient prm_generate_messages_cpp)
 
 add_executable(prmClient src/prmClient.cpp)
 target_link_libraries(prmClient ${catkin_LIBRARIES})
