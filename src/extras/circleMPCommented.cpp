@@ -27,17 +27,20 @@ circleMP::~circleMP(){}
 geometry_msgs::Point circleMP::getNextPoint(){
     if(curR<maxR){  
         if(counter>counterMax){
+            cout<<"New circle reached"<<endl;
             cout<<counter<<"  "<<counterMax<<endl;
             curR+=r;
-            dTheta = x/(float)curR;
             counter = 0;
             counterMax = (2*PI_F*curR/x);
         }
         curTheta = counter * dTheta;
+        cout<<"curR: "<<curR<<endl;
+        cout<<"curTheta: "<<curTheta<<endl;
+        cout<<"sin(curTheta): "<<sin(curTheta)<<endl;
         ideal.x = curR*cos(curTheta);
         ideal.y = curR*sin(curTheta);
-        cout<<"idealX WF: "<<ideal.x<<endl;
-        cout<<"idealY WF: "<<ideal.y<<endl;
+        cout<<"ideal.x: "<<ideal.x<<endl;
+        cout<<"ideal.y: "<<ideal.y<<endl;
         ideal = worldToGF(ideal);
         float idealX = ideal.x;
         float idealY = ideal.y;
@@ -47,13 +50,10 @@ geometry_msgs::Point circleMP::getNextPoint(){
         float wfZeroY = wfZero.y;
         counter++;
 
+        cout<<"MADE IT HERE"<<endl;
     	return findOpenSpot(idealX, idealY, wfZeroX, wfZeroY);
     }
-    else {
-        wfZero.x = 0;
-        wfZero.y = 0;
-        return wfZero;
-    }
+    else return wfZero;
 }
 
 void circleMP::parseOGrid()
@@ -94,7 +94,9 @@ geometry_msgs::Point circleMP::worldToGF(geometry_msgs::Point p){
 	geometry_msgs::Point gridFrameP;
 
     gridFrameP.x = (p.x-o.info.origin.position.x)/o.info.resolution;
+    cout<<"gridFrameP.x: "<<gridFrameP.x<<endl;
     gridFrameP.y = (p.y-(o.info.origin.position.y + o.info.height*o.info.resolution))*-1/o.info.resolution;
+    cout<<"gridFrameP.y: "<<gridFrameP.y<<endl;
 	return gridFrameP;
 }
 
@@ -104,8 +106,7 @@ geometry_msgs::Point circleMP::gridToWF(geometry_msgs::Point p){
 
 	worldFrameP.x = (p.x*o.info.resolution)+o.info.origin.position.x;
     worldFrameP.y = (p.y*o.info.resolution/-1)+o.info.origin.position.y + o.info.height*o.info.resolution;
-    cout<<"WF p.x: "<<worldFrameP.x<<endl;
-    cout<<"WF p.y: "<<worldFrameP.y<<endl;
+
 	return worldFrameP;
 }
 
@@ -113,11 +114,16 @@ geometry_msgs::Point circleMP::gridToWF(geometry_msgs::Point p){
 
 geometry_msgs::Point circleMP::findOpenSpot(float x1, float y1, float x2, float y2){
 
+    cout<<"x1: "<<x1<<endl;
+    cout<<"y1: "<<y1<<endl;
+    cout<<"x2: "<<x2<<endl;
+    cout<<"y2: "<<y2<<endl;
     geometry_msgs::Point p;
     vector<geometry_msgs::Point> pointList;
 
 	const bool steep = (fabs(y2 - y1) > fabs(x2 - x1));
     bool waitForEnd = (!steep&&x1>x2)||(steep&&y1>y2);
+    cout<<"Wait for end?: "<<waitForEnd<<endl;
     if(steep)
     {
         std::swap(x1, y1);
@@ -129,6 +135,7 @@ geometry_msgs::Point circleMP::findOpenSpot(float x1, float y1, float x2, float 
 
         std::swap(x1, x2);
         std::swap(y1, y2);
+        cout<<"Swapped, x2 = "<<x2;
     }
 
     const float dx = x2 - x1;
@@ -139,11 +146,14 @@ geometry_msgs::Point circleMP::findOpenSpot(float x1, float y1, float x2, float 
     int y = (int)y1;
 
     const int maxX = (int)x2;
+    cout<<"maxX: "<<maxX<<endl;
     int prevX, prevY;
 
     for(int x=(int)x1; x<maxX; x++)
     {
-
+        cout<<"x: "<<x<<endl;
+        cout<<"y: "<<y<<endl;
+        cout<<"------"<<endl;
         if(steep)
         {
             if(!occupancyGrid[y][x]&&!waitForEnd)
@@ -152,7 +162,7 @@ geometry_msgs::Point circleMP::findOpenSpot(float x1, float y1, float x2, float 
             	p.y = x;
                 cout<<"p.x: "<<p.x<<endl;
                 cout<<"p.y: "<<p.y<<endl;
-                return gridToWF(p);
+                return p;
             }
             else if(!occupancyGrid[y][x]&&waitForEnd){
                 p.x = y;
@@ -164,11 +174,12 @@ geometry_msgs::Point circleMP::findOpenSpot(float x1, float y1, float x2, float 
         {
             if(!occupancyGrid[x][y]&&!waitForEnd)
             {
+                if(x==130&&y==173)cout<<"Evaluated"<<endl;
             	p.x = x;
             	p.y = y;
                 cout<<"p.x: "<<p.x<<endl;
                 cout<<"p.y: "<<p.y<<endl;
-                return gridToWF(p);
+                return p;
             }
             else if(!occupancyGrid[x][y]&&waitForEnd){
                 p.x = x;
@@ -190,7 +201,7 @@ geometry_msgs::Point circleMP::findOpenSpot(float x1, float y1, float x2, float 
     if(pointList.size()>0){
         cout<<"p.x: "<<pointList.back().x<<endl;
         cout<<"p.y: "<<pointList.back().y<<endl;
-        return gridToWF(pointList.back());
+        return pointList.back();
     }
 
 
