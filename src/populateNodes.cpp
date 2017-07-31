@@ -39,7 +39,7 @@ const int nodeSize = 3;
 bool stillRunning = true;
 
 //True at start, allows selection of start and end points
-bool selectPts = true;
+bool selectPts = false;
 
 //Number of obstacles
 const int numObs = 3;
@@ -257,25 +257,12 @@ void populateNodes::run(float sx, float sy, int ex, int ey, int mD)
 
     cout << "Press space to populate" << endl;
 
-    float TLCornerXWFx = og.info.origin.position.x;
-    //cout<<TLCornerXWFx<<endl;
-    float TLCornerXWFy = og.info.origin.position.y + og.info.height*og.info.resolution;
-    float quadXWFx = sx;
-    //cout<<sx<<endl;
-    float quadXWFy = sy;
+    startX = (sx-og.info.origin.position.x)/og.info.resolution;
+    startY = (sy-(og.info.origin.position.y + og.info.height*og.info.resolution))*-1/og.info.resolution;
+    endX   = (ex-og.info.origin.position.x)/og.info.resolution;
+    endY   = (ey-(og.info.origin.position.y + og.info.height*og.info.resolution))*-1/og.info.resolution;
+    
 
-    float quadXWindowx = (quadXWFx-TLCornerXWFx);
-    //cout<<quadXWindowx<<endl;
-    float quadXWindowy = (quadXWFy-TLCornerXWFy)*-1/og.info.resolution;
-
-
-    startX = quadXWindowx/og.info.resolution;
-    startY = quadXWindowy;
-    // cout<<sx<<endl;
-    // cout<<sy<<endl;
-
-    endX = ex;
-    endY = ey;
     maxNodeDist = mD;
 
     redrawSF();
@@ -288,10 +275,6 @@ void populateNodes::run(float sx, float sy, int ex, int ey, int mD)
     SDL_Quit();
 
     for(int i = 0; i<numNodes; i++) delete nodeList[i];
-    //delete []nodeList;
-    //delete []closedNodeList;
-    //delete []addedNodes;
-    //cout<<"GameState = EXIT"<<endl;
 }
 
 //Create window and initialize lists, makes white background
@@ -316,10 +299,6 @@ void populateNodes::initSystems()
     closedNodeList[0] = 0;
     closedCounter = closedCounter + 1;
     stillRunning = true;
-
-    selectPts = true;
-
-
 
 }
 

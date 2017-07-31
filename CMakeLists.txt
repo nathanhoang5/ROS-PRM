@@ -95,6 +95,10 @@ add_executable(AirSimPRM src/AirSimPRM.cpp)
 target_link_libraries(AirSimPRM ${catkin_LIBRARIES})
 add_dependencies(AirSimPRM prm_gencpp)
 
+add_executable(mapAirSim src/mapAirSim.cpp)
+target_link_libraries(mapAirSim ${catkin_LIBRARIES})
+add_dependencies(mapAirSim prm_gencpp)
+
 add_executable(moveQuad src/moveQuad.cpp)
 target_link_libraries(moveQuad ${catkin_LIBRARIES})
 add_dependencies(moveQuad prm_gencpp)

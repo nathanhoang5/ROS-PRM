@@ -1,4 +1,5 @@
 #include "ros/ros.h"
+#include "prm/circularMissionPlan.h"
 #include "prm/PRM.h"
 #include "prm/PRMQuery.h"
 #include <prm/node.h>
@@ -24,6 +25,15 @@ float y = -3;
 float z = 5.25;
 bool needsReset = true;
 
+geometry_msgs::Point worldToGF(geometry_msgs::Point p, nav_msgs::OccupancyGrid o){
+  geometry_msgs::Point gridFrameP;
+
+    gridFrameP.x = (p.x-o.info.origin.position.x)/o.info.resolution;
+    gridFrameP.y = (p.y-(o.info.origin.position.y + o.info.height*o.info.resolution))*-1/o.info.resolution;
+
+  return gridFrameP;
+}
+
 void prmCallback(const nav_msgs::OccupancyGrid& o)
 {
     
@@ -35,11 +45,21 @@ void prmCallback(const nav_msgs::OccupancyGrid& o)
 
         int maxDistanceWorldFrame = 5;
 
+        ros::ServiceClient cmpClient = nh.serviceClient<prm::circularMissionPlan>("circleMP");
+        prm::circularMissionPlan cmp;
+
         ros::ServiceClient client = nh.serviceClient<prm::PRM>("PRM");
         prm::PRM srv;
 
         ros::ServiceClient clientQ = nh.serviceClient<prm::PRMQuery>("PRMQuery");
         prm::PRMQuery srvQ;
+
+        cmp.request.o = o;
+        cmp.request.dr = 3;
+        cmp.request.dx = 3;
+        cmp.request.maxRadius = 50;
+        
+
 
         srv.request.startX = x;
         srv.request.startY = y;
@@ -60,6 +80,20 @@ void prmCallback(const nav_msgs::OccupancyGrid& o)
         srv.request.o = o;
         srvQ.request.o = o;
 
+        if (cmpClient.call(cmp))
+        {
+          geometry_msgs::Point p = worldToGF(cmp.response.p, o);
+
+          srv.request.endX = p.x;
+          srv.request.endY = p.y;
+
+         }
+         else
+        {
+            ROS_ERROR("Failed to call service MISSION PLANNER");
+
+        }
+
         if (client.call(srv))
         {
             srvQ.request.nA = srv.response.nA;
@@ -67,7 +101,7 @@ void prmCallback(const nav_msgs::OccupancyGrid& o)
 
         else
         {
-            ROS_ERROR("Failed to call service PRM");
+            ROS_ERROR("Failed to call service POPULATE");
 
         }
 

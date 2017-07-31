@@ -82,7 +82,7 @@ void mapCallback(const nav_msgs::OccupancyGrid& o)
       startRect.w = nodeSize;
       startRect.x = startX-nodeSize/2;
       startRect.y = startY-nodeSize/2;
-      SDL_SetRenderDrawColor(_renderer, 0, 255, 255, 255);
+      SDL_SetRenderDrawColor(_renderer, 0, 139, 139, 255);
       SDL_RenderFillRect(_renderer, &startRect);
 
       // ros::Duration(0.5).sleep();

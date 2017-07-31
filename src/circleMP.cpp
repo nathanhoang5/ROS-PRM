@@ -1,3 +1,4 @@
+#include "ros/ros.h"
 #include "circleMP.h"
 #include <nav_msgs/OccupancyGrid.h>
 #include <geometry_msgs/Point.h>
@@ -52,6 +53,7 @@ geometry_msgs::Point circleMP::getNextPoint(){
     else {
         wfZero.x = 0;
         wfZero.y = 0;
+        ROS_INFO("MAX RADIUS REACHED");
         return wfZero;
     }
 }
