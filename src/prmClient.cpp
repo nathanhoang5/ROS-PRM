@@ -39,8 +39,8 @@ int main(int argc, char **argv)
 
   srvQ.request.numNodes = srv.request.numNodes;
   srvQ.request.maxDistance = srv.request.maxDistance;
-  srvQ.request.startX = 20;
-  srvQ.request.startY = 270;
+  srvQ.request.startX = srv.request.startX;
+  srvQ.request.startY = srv.request.startY;
   srvQ.request.endX = 460;
   srvQ.request.endY = 20;
 
@@ -49,6 +49,8 @@ int main(int argc, char **argv)
   nav_msgs::OccupancyGrid obs;
   obs.info.width = sw;
   obs.info.height = sh;
+  obs.info.resolution = 1;
+
   int occupancyGrid[sw][sh];
   //Create Obstacle: x1, x2, y1, y2
   for(int i = 0; i<sw; i++){
@@ -70,10 +72,12 @@ int main(int argc, char **argv)
         }
   }
 
-  for(int j = 0; j<sh; j++){
-    for(int i = 0; i<sw; i++){
-        obs.data.push_back(occupancyGrid[i][j]);
+  for(int j = sh-1; j>=0; j--)
+    {
 
+        for(int i = 0; i<sw; i++)
+        {
+        obs.data.push_back(occupancyGrid[i][j]);
     }
   }
   srv.request.o = obs;

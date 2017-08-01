@@ -64,9 +64,9 @@ void mapCallback(const nav_msgs::OccupancyGrid& o)
   srv.request.maxRadius = 50;
 
   //max survey points
-  int maxPoints = 40, nodeSize = 3;
+  int maxPoints = 80, nodeSize = 3;
 
-  // for(int i = 0; i<maxPoints; i++){
+   for(int i = 0; i<maxPoints; i++){
     if (client.call(srv))
     {
       //Display to screen
@@ -94,7 +94,7 @@ void mapCallback(const nav_msgs::OccupancyGrid& o)
       
     }
 
-  // }
+   }
 
   SDL_RenderPresent(_renderer);
   SDL_RenderPresent(_renderer);
