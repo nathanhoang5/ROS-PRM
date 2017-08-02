@@ -7,8 +7,8 @@
 
 using namespace std;
 
-circleMP::circleMP(nav_msgs::OccupancyGrid ob, int dr, int dx, int mR){
-	o = ob;
+circleMP::circleMP(int dr, int dx, int mR){
+	
     curR = dr;
 	r = dr;
 	x = dx;
@@ -16,16 +16,22 @@ circleMP::circleMP(nav_msgs::OccupancyGrid ob, int dr, int dx, int mR){
 	dTheta = x/(float)r;
     counter = 0;
     counterMax = (2*PI_F*curR/x);
-	occupancyGrid.resize(ob.info.width, vector<int>(ob.info.height, 0));
-	parseOGrid();
-	wfZero.x = 0;
-	wfZero.y = 0;
-	wfZero = worldToGF(wfZero);
+	
 }
 
 circleMP::~circleMP(){}
 
-geometry_msgs::Point circleMP::getNextPoint(){
+geometry_msgs::Point circleMP::getNextPoint(nav_msgs::OccupancyGrid ob){
+    o = ob;
+    occupancyGrid.clear();
+    occupancyGrid.resize(ob.info.width, vector<int>(ob.info.height, 0));
+    parseOGrid();
+    wfZero.x = 0;
+    wfZero.y = 0;
+    wfZero = worldToGF(wfZero);
+    cout<<"Radius: "<<r<<endl;
+    cout<<"Counter val: "<<counter<<endl;
+    cout<<"Counter max: "<<counterMax<<endl;
     if(curR<maxR){  
         if(counter>counterMax){
             cout<<counter<<"  "<<counterMax<<endl;
@@ -60,8 +66,9 @@ geometry_msgs::Point circleMP::getNextPoint(){
 
 void circleMP::parseOGrid()
 {
+    cout<<"Grid ID: "<<o.info.map_load_time;
     int oCounter = 0;
-    int bufferSize = .75/o.info.resolution;
+    int bufferSize = 1/o.info.resolution;
     for(int j = o.info.height-1; j>=0; j--)
     {
 
@@ -106,8 +113,6 @@ geometry_msgs::Point circleMP::gridToWF(geometry_msgs::Point p){
 
 	worldFrameP.x = (p.x*o.info.resolution)+o.info.origin.position.x;
     worldFrameP.y = (p.y*o.info.resolution/-1)+o.info.origin.position.y + o.info.height*o.info.resolution;
-    cout<<"WF p.x: "<<worldFrameP.x<<endl;
-    cout<<"WF p.y: "<<worldFrameP.y<<endl;
 	return worldFrameP;
 }
 
@@ -148,15 +153,16 @@ geometry_msgs::Point circleMP::findOpenSpot(float x1, float y1, float x2, float 
 
         if(steep)
         {
-            if(!occupancyGrid[y][x]&&!waitForEnd)
+            if(!occupancyGrid[y][x]&&!waitForEnd&&inGrid(y,x))
             {
             	p.x = y;
             	p.y = x;
-                cout<<"p.x: "<<p.x<<endl;
+                cout<<"NO WAIT, STEEP p.x: "<<p.x<<endl;
                 cout<<"p.y: "<<p.y<<endl;
-                return gridToWF(p);
+                cout<<"OG AT (x,y): "<<occupancyGrid[p.x][p.y]<<endl;
+                return p;
             }
-            else if(!occupancyGrid[y][x]&&waitForEnd){
+            else if(!occupancyGrid[y][x]&&waitForEnd&&inGrid(y,x)){
                 p.x = y;
                 p.y = x;
                 pointList.push_back(p);
@@ -164,15 +170,16 @@ geometry_msgs::Point circleMP::findOpenSpot(float x1, float y1, float x2, float 
         }
         else
         {
-            if(!occupancyGrid[x][y]&&!waitForEnd)
+            if(!occupancyGrid[x][y]&&!waitForEnd&&inGrid(x,y))
             {
             	p.x = x;
             	p.y = y;
-                cout<<"p.x: "<<p.x<<endl;
+                cout<<"NO WAIT, STEEP p.x: "<<p.x<<endl;
                 cout<<"p.y: "<<p.y<<endl;
-                return gridToWF(p);
+                cout<<"OG AT (x,y): "<<occupancyGrid[p.x][p.y]<<endl;
+                return p;
             }
-            else if(!occupancyGrid[x][y]&&waitForEnd){
+            else if(!occupancyGrid[x][y]&&waitForEnd&&inGrid(x,y)){
                 p.x = x;
                 p.y = y;
                 pointList.push_back(p);
@@ -190,15 +197,23 @@ geometry_msgs::Point circleMP::findOpenSpot(float x1, float y1, float x2, float 
     }
 
     if(pointList.size()>0){
-        cout<<"p.x: "<<pointList.back().x<<endl;
+        cout<<"WAIT p.x: "<<pointList.back().x<<endl;
         cout<<"p.y: "<<pointList.back().y<<endl;
-        return gridToWF(pointList.back());
+        cout<<"OG AT (x,y): "<<occupancyGrid[p.x][p.y]<<endl;
+        return pointList.back();
     }
 
 
     p.x = wfZero.x;
     p.y = wfZero.y;
-    cout<<"p.x: "<<p.x<<endl;
-    cout<<"p.y: "<<p.y<<endl;
-    return gridToWF(p);
+    cout<<"RETURN WF ZERO p.x: "<<p.x<<endl;
+    cout<<"RETURN WF ZERO p.y: "<<p.y<<endl;
+    return p;
+}
+
+bool circleMP::inGrid(int x, int y){
+    if(x>0&&x<o.info.width&&y>0&&y<o.info.height)
+        return true;
+    else
+        return false;
 }

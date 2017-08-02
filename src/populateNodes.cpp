@@ -1,3 +1,4 @@
+#include "ros/ros.h"
 #include "populateNodes.h"
 #include <iostream>
 #include <queue>
@@ -259,9 +260,12 @@ void populateNodes::run(float sx, float sy, int ex, int ey, int mD)
 
     startX = (sx-og.info.origin.position.x)/og.info.resolution;
     startY = (sy-(og.info.origin.position.y + og.info.height*og.info.resolution))*-1/og.info.resolution;
-    endX   = (ex-og.info.origin.position.x)/og.info.resolution;
-    endY   = (ey-(og.info.origin.position.y + og.info.height*og.info.resolution))*-1/og.info.resolution;
+    // endX   = (ex-og.info.origin.position.x)/og.info.resolution;
+    // endY   = (ey-(og.info.origin.position.y + og.info.height*og.info.resolution))*-1/og.info.resolution;
+    endX = ex;
+    endY = ey;
     
+    cout<<"Og at endX/Y: "<< occupancyGrid[endX][endY]<< endl;
 
     maxNodeDist = mD;
 
@@ -478,6 +482,7 @@ void populateNodes::createObstacle()
 
         }
     }
+
 }
 
 //Connects nodes to its neighbors
@@ -614,6 +619,9 @@ void populateNodes::redrawSF()
     finRect.w = nodeSize;
     finRect.x = endX - nodeSize / 2;
     finRect.y = endY - nodeSize / 2;
+    cout<<"endX: "<<endX<<endl;
+    cout<<"endYX: "<<endY<<endl;
+    ROS_INFO("endY: %i", endY);
     SDL_SetRenderDrawColor(_renderer, 255, 0, 0, 255);
     SDL_RenderFillRect(_renderer, &finRect);
 
@@ -621,7 +629,8 @@ void populateNodes::redrawSF()
 }
 
 void populateNodes::fillROSNodeArray()
-{
+{   
+
     for(int i = 0; i<numNodes; i++)
     {
         prm::node curN;
@@ -644,6 +653,7 @@ void populateNodes::fillROSNodeArray()
 
 void populateNodes::parseOGrid()
 {
+    cout<<"Grid ID: "<<og.info.map_load_time;
     int oCounter = 0;
     //reverse(og.data.begin(),og.data.end());
 //for(int j = 0; j<sh; j++){

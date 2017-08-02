@@ -1,0 +1,5 @@
+ <launch>
+ 	<node pkg="prm" type="pNodesRun" name="pNodesRun" output="screen"/>
+ 	<node pkg="prm" type="pQueryRun" name="pQueryRun" output="screen"/>
+	<node pkg="prm" type="circleMPRun" name="circleMPRun" output="screen"/>
+</launch>

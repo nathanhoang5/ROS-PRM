@@ -18,10 +18,10 @@ using namespace std;
 int numNodes;
 
 //Start and end positions
-int startX = 120;
-int startY = 130;
-int endX = 400;
-int endY = 130;
+int startX;
+int startY;
+int endX;
+int endY;
 
 //Screen height and screen width
 int sh;
@@ -290,6 +290,7 @@ void pQuery::run()
 
     initSystems();
     parseOGrid();
+    
     createObstacle();
     createObstacle();
     SDL_RenderPresent(_renderer);
@@ -301,6 +302,11 @@ void pQuery::run()
 
 
     fillLocalNodeArray();
+
+    startX = nodeList[0]->getxPos();
+    startY = nodeList[0]->getyPos();
+    endX = nodeList[1]->getxPos();
+    endY = nodeList[1]->getyPos();
     redrawSF();
     redrawSF();
     gameLoop();
@@ -717,6 +723,16 @@ void pQuery::query()
         //If there are no more open nodes, there is no possible path
         if (pq.size() == 0)
         {
+            pq = priority_queue<node, vector<node>, CompareNode>();
+            //cout <<"PQ Size After: "<<pq.size()<<endl;
+            closedCounter = 0;
+            //cout <<"Closed Counter: "<<closedCounter;
+            for(int i = 0; i<numNodes; i++)
+            {
+                nodeList[i] = nullptr;
+
+            }
+            pathList = "";
             cout<<"No path to end!"<<endl;
             // gameLoop();
             break;

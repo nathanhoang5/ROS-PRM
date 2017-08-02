@@ -8,9 +8,9 @@ using namespace std;
 class circleMP
 {
 public:
-	circleMP(nav_msgs::OccupancyGrid ob, int dr, int dx, int mR);
+	circleMP(int dr, int dx, int mR);
 	~circleMP();
-	geometry_msgs::Point getNextPoint();
+	geometry_msgs::Point getNextPoint(nav_msgs::OccupancyGrid ob);
 	vector<vector<int>> occupancyGrid;
 
 private:
@@ -25,5 +25,6 @@ private:
 	geometry_msgs::Point worldToGF(geometry_msgs::Point p);
 	geometry_msgs::Point gridToWF(geometry_msgs::Point p);
 	geometry_msgs::Point findOpenSpot(float x1, float y1, float x2, float y2);
+	bool inGrid(int x, int y);
 	
 };

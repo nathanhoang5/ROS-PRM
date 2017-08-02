@@ -62,6 +62,7 @@ public:
       result_.finalPosition.position.z = curPos.position.z;
       finished = false;
       spin = false;
+      spinCounter = 0;
       as_.setSucceeded(result_);
     }
     else if(!spin){
@@ -75,9 +76,9 @@ public:
          }
          else{
              curTarget = targetNodes.data.front();
-             yaw+=yawIncrement;
-             if(yaw==2*PI_F)yaw = 0;
-             curTarget.yaw=yaw;
+             // yaw+=yawIncrement;
+             // if(yaw==2*PI_F)yaw = 0;
+             // curTarget.yaw=yaw;
              PVAControl.publish(curTarget);
              targetNodes.data.erase(targetNodes.data.begin());
              ROS_INFO("Publishing next node");
@@ -85,7 +86,7 @@ public:
          }
       }
     }
-    else{
+    else if(spin&&mapping){
       ROS_INFO("Spinning: %f", curTarget.yaw);
       ros::Duration(0.5).sleep();
       yaw+=yawIncrement;
@@ -94,6 +95,9 @@ public:
       PVAControl.publish(curTarget);
       spinCounter++;
       if(spinCounter == spinMax)finished = true;
+    }
+    else if(spin&&!mapping){
+      finished=true;
     }
   }
 
@@ -111,7 +115,7 @@ protected:
   const float  PI_F=3.14159265358979f;
   float maxDev = .15;
   float yaw = 0, yawIncrement = PI_F/8;
-  bool spin = false, finished = false;
+  bool mapping = true, spin = false, finished = false;
   int numSpins = 2, spinMax = 1/(yawIncrement/PI_F)*numSpins, spinCounter = 0;
 
 };

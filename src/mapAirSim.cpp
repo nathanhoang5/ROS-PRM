@@ -24,6 +24,7 @@ float x = -3;
 float y = -3;
 float z = 5.25;
 bool needsReset = true;
+int counter = 0;
 
 geometry_msgs::Point worldToGF(geometry_msgs::Point p, nav_msgs::OccupancyGrid o){
   geometry_msgs::Point gridFrameP;
@@ -34,14 +35,24 @@ geometry_msgs::Point worldToGF(geometry_msgs::Point p, nav_msgs::OccupancyGrid o
   return gridFrameP;
 }
 
+geometry_msgs::Point gridToWF(geometry_msgs::Point p, nav_msgs::OccupancyGrid o){
+    geometry_msgs::Point worldFrameP;
+
+    worldFrameP.x = (p.x*o.info.resolution)+o.info.origin.position.x;
+    worldFrameP.y = (p.y*o.info.resolution/-1)+o.info.origin.position.y + o.info.height*o.info.resolution;
+    return worldFrameP;
+}
+
 void prmCallback(const nav_msgs::OccupancyGrid& o)
 {
     
     if(!needsReset)
     {
-        
+
+        counter++;
         ros::NodeHandle nh;
         needsReset = true;
+        bool isBroken = false;
 
         int maxDistanceWorldFrame = 5;
 
@@ -55,8 +66,9 @@ void prmCallback(const nav_msgs::OccupancyGrid& o)
         prm::PRMQuery srvQ;
 
         cmp.request.o = o;
-        cmp.request.dr = 3;
-        cmp.request.dx = 3;
+        //run with dr = 20 and dx = 12
+        cmp.request.dr = 20;
+        cmp.request.dx = 12;
         cmp.request.maxRadius = 50;
         
 
@@ -65,7 +77,7 @@ void prmCallback(const nav_msgs::OccupancyGrid& o)
         srv.request.startY = y;
         srv.request.endX = 0;
         srv.request.endY = 0;
-        srv.request.numNodes = .2 * o.info.width * o.info.height * o.info.resolution * o.info.resolution;
+        srv.request.numNodes = .16 * o.info.width * o.info.height * o.info.resolution * o.info.resolution;
         srv.request.maxDistance = maxDistanceWorldFrame/o.info.resolution;
 
         cout<<"Running with  "<<srv.request.numNodes<< " nodes"<<endl;
@@ -77,83 +89,95 @@ void prmCallback(const nav_msgs::OccupancyGrid& o)
         srvQ.request.numNodes = srv.request.numNodes;
         srvQ.request.maxDistance = srv.request.maxDistance;
 
-        srv.request.o = o;
-        srvQ.request.o = o;
+        srv.request.o = cmp.request.o;
+        srvQ.request.o = cmp.request.o;
 
         if (cmpClient.call(cmp))
         {
-          geometry_msgs::Point p = worldToGF(cmp.response.p, o);
+          // geometry_msgs::Point p = worldToGF(cmp.response.p, o);
 
-          srv.request.endX = p.x;
-          srv.request.endY = p.y;
+          srv.request.endX = cmp.response.p.x;
+          srv.request.endY = cmp.response.p.y;
 
          }
          else
         {
             ROS_ERROR("Failed to call service MISSION PLANNER");
+            isBroken=true;
 
         }
+        if(!isBroken){
+            if (client.call(srv))
+            {
 
-        if (client.call(srv))
-        {
-            srvQ.request.nA = srv.response.nA;
-        }
+                srvQ.request.nA = srv.response.nA;
+                geometry_msgs::Point endPt;
+                endPt.x = srv.response.nA.nodeLst[1].x;
+                endPt.y = srv.response.nA.nodeLst[1].y;
+                endPt = gridToWF(endPt,o);
+                cout<<"endX: "<<endPt.x;
+                cout<<"endY: "<<endPt.y;
+            }
 
-        else
-        {
-            ROS_ERROR("Failed to call service POPULATE");
+            else
+            {
+                ROS_ERROR("Failed to call service POPULATE");
+                isBroken=true;
 
-        }
-
-
-
-        if(clientQ.call(srvQ))
-        {
-            if(srvQ.response.nFinal.nodeLst.size()>0){
-                px4_control::PVAarray targetArray;
-                std::cout<<"Path:"<<std::endl;
-                for(std::vector<prm::node>::const_iterator it = srvQ.response.nFinal.nodeLst.begin(); it != srvQ.response.nFinal.nodeLst.end(); ++it)
-                {
-                    prm::node g;
-                    g = *it;
-                    px4_control::PVA curTarget;
-                    curTarget.Pos.x = g.x;
-                    curTarget.Pos.y = g.y;
-                    curTarget.Pos.z = z;
-                    targetArray.data.push_back(curTarget);
-                    std::cout<<"Node: "<<g.id<<" xPos: "<<g.x<<" yPos: "<<g.y<<std::endl;
-                }
-                actionlib::SimpleActionClient<prm::moveQuadAction> ac("movingQuad", true);
-
-                ROS_INFO("Waiting for move quad server to start.");
-                // wait for the action server to start
-                ac.waitForServer(); //will wait for infinite time
-
-                ROS_INFO("Sent quad waypoints.");
-                // send a goal to the action
-                prm::moveQuadGoal goal;
-                goal.target = targetArray;
-                ac.sendGoal(goal);
-
-                //wait for the action to return
-                bool finished_before_timeout = ac.waitForResult(ros::Duration(300.0));
-
-                if (finished_before_timeout)
-                {
-                    actionlib::SimpleClientGoalState state = ac.getState();
-                    ROS_INFO("Quad reached position: %s",state.toString().c_str());
-                }
-                else
-                    ROS_INFO("PRM failed.");
-                //std::cout<<"Query called successfully!"<<std::endl;
-        
             }
         }
 
-        else
-        {
-            ROS_ERROR("Failed to call service QUERY");
 
+        if(!isBroken){
+            if(clientQ.call(srvQ))
+            {
+                if(srvQ.response.nFinal.nodeLst.size()>0){
+                    px4_control::PVAarray targetArray;
+                    std::cout<<"Path:"<<std::endl;
+                    for(std::vector<prm::node>::const_iterator it = srvQ.response.nFinal.nodeLst.begin(); it != srvQ.response.nFinal.nodeLst.end(); ++it)
+                    {
+                        prm::node g;
+                        g = *it;
+                        px4_control::PVA curTarget;
+                        curTarget.Pos.x = g.x;
+                        curTarget.Pos.y = g.y;
+                        curTarget.Pos.z = z;
+                        targetArray.data.push_back(curTarget);
+                        std::cout<<"Node: "<<g.id<<" xPos: "<<g.x<<" yPos: "<<g.y<<std::endl;
+                    }
+                    actionlib::SimpleActionClient<prm::moveQuadAction> ac("movingQuad", true);
+
+                    ROS_INFO("Waiting for move quad server to start.");
+                    // wait for the action server to start
+                    ac.waitForServer(); //will wait for infinite time
+
+                    ROS_INFO("Sent quad waypoints.");
+                    // send a goal to the action
+                    prm::moveQuadGoal goal;
+                    goal.target = targetArray;
+                    ac.sendGoal(goal);
+
+                    //wait for the action to return
+                    bool finished_before_timeout = ac.waitForResult(ros::Duration(300.0));
+
+                    if (finished_before_timeout)
+                    {
+                        actionlib::SimpleClientGoalState state = ac.getState();
+                        ROS_INFO("Quad reached position: %s",state.toString().c_str());
+                    }
+                    else
+                        ROS_INFO("PRM failed.");
+                    //std::cout<<"Query called successfully!"<<std::endl;
+            
+                }
+            }
+
+            else
+            {
+                ROS_ERROR("Failed to call service QUERY");
+                needsReset=true;
+
+            }
         }
     }
 }

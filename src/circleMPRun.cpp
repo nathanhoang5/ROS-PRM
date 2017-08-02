@@ -12,13 +12,13 @@ bool getPoint(prm::circularMissionPlan::Request  &req,
                prm::circularMissionPlan::Response &res){
 
 	if(!instantiated){
-		missionPlanner = new circleMP(req.o, req.dr, req.dx, req.maxRadius);
+		missionPlanner = new circleMP(req.dr, req.dx, req.maxRadius);
 		instantiated = true;
 		ROS_INFO("Created new mission planner");
 	}
 	ROS_INFO("Fetching point");
     
-	res.p = missionPlanner->getNextPoint();
+	res.p = missionPlanner->getNextPoint(req.o);
 
     return true;
 }
